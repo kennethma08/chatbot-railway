@@ -1,0 +1,617 @@
+﻿@model List<WhatsappClient.Models.ContactoDto>
+@{
+    ViewData["Title"] = "Lista de clientes";
+}
+
+<div class="container-fluid px-3 px-md-4 py-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h2 class="mb-0 fw-bold">Clientes que han contactado</h2>
+    </div>
+
+    <div class="card card-contacts shadow-sm">
+        <div class="card-body p-0">
+
+            <div class="dt-custom-filter px-3 pt-3 pb-2">
+                <div class="dt-length-custom d-flex align-items-center gap-2">
+                    <span>Mostrar</span>
+                    <select id="contactosLength" class="form-select form-select-sm">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span>registros</span>
+                </div>
+
+                <div class="dt-search-pill">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                    <input id="contactosSearch"
+                           type="search"
+                           class="form-control"
+                           placeholder="Buscar cliente o teléfono…"
+                           aria-label="Buscar clientes" />
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="contactosTable" class="table align-middle mb-0 agents-table table-contacts">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>País</th>
+                            <th>Último mensaje</th>
+                            <th class="text-end" style="width:140px;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            var displayName = string.IsNullOrWhiteSpace(c.Name) ? c.PhoneNumber : c.Name;
+                            var initialSrc = (displayName ?? "C").Trim();
+                            var initial = initialSrc.Length > 0 ? initialSrc.Substring(0, 1).ToUpperInvariant() : "C";
+                            var ultimo = c.LastMessageAt?.ToLocalTime().ToString("g") ?? "—";
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar">@initial</div>
+                                        <div>
+                                            <div class="fw-semibold" id="cname-@c.Id">@displayName</div>
+                                            <div class="text-muted small">@c.PhoneNumber</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-muted">@(!string.IsNullOrWhiteSpace(c.Country) ? c.Country : "—")</td>
+                                <td class="text-muted">@ultimo</td>
+                                <td class="text-end">
+                                    <button type="button"
+                                            class="ghost btn-view"
+                                            title="Ver detalles"
+                                            data-id="@c.Id"
+                                            data-name="@displayName"
+                                            data-phone="@c.PhoneNumber"
+                                            data-country="@c.Country"
+                                            data-status="@c.Status"
+                                            data-lastmessage="@ultimo">
+                                        Ver
+                                    </button>
+                                    @* Eliminado el botón "Historial" de la tabla *@
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/contacto.css" asp-append-version="true" />
+    <!-- Iconos (lápiz) -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+    <style>
+        /* Theming Offcanvas */
+        .offcanvas-themed .offcanvas-header {
+            background: #7f4ca5;
+            color: #fff;
+        }
+
+        .offcanvas-themed .btn-close {
+            filter: invert(1) grayscale(100%);
+            opacity: .85;
+        }
+
+            .offcanvas-themed .btn-close:hover {
+                opacity: 1;
+            }
+
+        .offcanvas-themed .offcanvas-body {
+            background: #fff;
+        }
+
+        .btn-secondary {
+            background: #b57edc;
+            border-radius: 12px;
+        }
+
+        .btn-view {
+            background: #fff;
+        }
+
+        /* Inline edit */
+        .icon-btn {
+            border: 0;
+            background: transparent;
+            padding: 4px 6px;
+            border-radius: 8px;
+            line-height: 1;
+        }
+
+            .icon-btn:hover {
+                background: rgba(0,0,0,.06);
+            }
+
+        #oc-name[contenteditable="true"] {
+            outline: 2px dashed #e3e3f5;
+            border-radius: 6px;
+            padding: 2px 4px;
+        }
+
+        .tile-label {
+            color: #6c757d;
+            font-size: .85rem;
+        }
+
+        /* Secciones en offcanvas */
+        .oc-section-title {
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: .5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: #efefef;
+            margin: .75rem 0 1rem 0;
+        }
+
+        /* Última conversación en offcanvas */
+        #oc-conv-msg {
+            max-height: 42vh;
+            overflow: auto;
+            background: #fafbfc;
+            border: 1px solid #eef0f3;
+            border-radius: 10px;
+            padding: .5rem .5rem 0;
+        }
+
+        .oc-info small {
+            color: #6c757d;
+        }
+
+        .bubble {
+            display: inline-block;
+            padding: .5rem .75rem;
+            border-radius: 12px;
+            margin-bottom: .5rem;
+            max-width: 85%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+            .bubble.agent {
+                background: #d1ecf1;
+                margin-left: auto;
+            }
+
+            .bubble.contact {
+                background: #f1f1f1;
+                margin-right: auto;
+            }
+
+        .bubble-meta {
+            font-size: .72rem;
+            color: #6c757d;
+            margin-top: -.25rem;
+            margin-bottom: .25rem;
+        }
+
+        .msg-row {
+            display: flex;
+            flex-direction: column;
+        }
+
+            .msg-row.agent {
+                align-items: flex-end;
+            }
+
+            .msg-row.contact {
+                align-items: flex-start;
+            }
+    </style>
+}
+
+<!-- Offcanvas Detalle Contacto -->
+<div class="offcanvas offcanvas-end offcanvas-themed" tabindex="-1" id="contactOffcanvas" aria-labelledby="contactOffcanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="contactOffcanvasLabel">Detalles del contacto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- Cabecera con edición inline -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div id="oc-avatar" class="avatar">C</div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span id="oc-name" class="fw-bold" aria-label="Nombre del contacto"></span>
+                <button type="button" id="oc-btnEditName" class="icon-btn" title="Editar nombre" aria-label="Editar nombre">
+                    <i class="bx bx-pencil"></i>
+                </button>
+                <button type="button" id="oc-btnSaveName" class="btn btn-primary btn-sm" style="display:none;">
+                    Guardar
+                </button>
+            </div>
+        </div>
+
+        <!-- Datos básicos -->
+        <dl class="row small mb-0 oc-info">
+            <dt class="col-5 tile-label">Teléfono</dt>
+            <dd class="col-7" id="oc-phone"></dd>
+
+            <dt class="col-5 tile-label">País</dt>
+            <dd class="col-7" id="oc-country"></dd>
+
+            <dt class="col-5 tile-label">Último mensaje</dt>
+            <dd class="col-7" id="oc-last"></dd>
+        </dl>
+
+        <div class="divider"></div>
+
+        <!-- Última conversación embebida -->
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="oc-section-title">Última conversación</div>
+            <button type="button" id="oc-btn-open-full" class="btn btn-light btn-sm">
+                Ver todo
+            </button>
+        </div>
+
+        <div id="oc-conv-info" class="small text-muted mb-1"></div>
+        <div id="oc-conv-msg">
+            <!-- Mensajes de la última conversación -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Historial (completo, sin cambios) -->
+<div class="modal fade" id="convModal" tabindex="-1" aria-labelledby="convModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+        <div class="modal-content modal-themed">
+            <div class="modal-header">
+                <h5 class="modal-title w-100 text-center">
+                    Conversaciones — <span id="convModalContactName"></span>
+                    <small class="text-white" id="convModalContactPhone"></small>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="row" style="min-height:50vh;">
+                    <div class="col-md-4 border-end">
+                        <div class="list-group" id="convList"></div>
+                    </div>
+                    <div class="col-md-8">
+                        <div id="convInfo" class="mb-2 text-muted small"></div>
+                        <div id="convMessages" style="max-height:45vh; overflow:auto;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button class="btn btn-secondary text-center" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function ($) {
+            $(function () {
+                if (!$.fn.DataTable) { console.error('DataTables no detectado.'); return; }
+                try { if ($.fn.DataTable.isDataTable('#contactosTable')) $('#contactosTable').DataTable().destroy(); } catch {}
+
+                const pageLen = 5;
+                const table = $('#contactosTable').DataTable({
+                    dom: 't<"dt-foot d-flex flex-wrap gap-2 align-items-center justify-content-between px-3 pb-3"ip>',
+                    language: { url: 'https://cdn.datatables.net/plug-ins/2.3.4/i18n/es-ES.json' },
+                    pageLength: pageLen,
+                    lengthMenu: [5,10,25,50,100],
+                    scrollX: true,
+                    autoWidth: false,
+                    ordering: true,
+                    responsive: false,
+                    columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+                    order: [[3, 'desc']]
+                });
+
+                // Sincroniza select de longitud
+                const $len = $('#contactosLength');
+                $len.val(String(table.page.len()));
+                $len.on('change', function(){
+                    const v = parseInt(this.value || '5', 10);
+                    table.page.len(v).draw(false);
+                });
+
+                // Buscador
+                const debounce = (fn, wait) => { let t; return function() { clearTimeout(t); t = setTimeout(() => fn.apply(this, arguments), wait); }; };
+                $('#contactosSearch')
+                    .on('input', debounce(function () { table.search(this.value || '').draw(); }, 200))
+                    .on('keydown', function (e) { if (e.key === 'Escape') { $(this).val(''); table.search('').draw(); } });
+
+                // Utils
+                function fmtDateTimeCR(iso) {
+                    if (!iso) return '—';
+                    var d = new Date(iso);
+                    return d.toLocaleString('es-CR', { timeZone: 'America/Costa_Rica', dateStyle: 'short', timeStyle: 'short' });
+                }
+                function esc(s) {
+                    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+                }
+
+                // ====== Offcanvas: edición + última conversación ======
+                let currentContactId = null;
+                let currentContactPhone = '';
+                let currentContactName = '';
+                let isEditingContact = false;
+                let offcanvasInstance = null;
+
+                function getOffcanvas(){
+                    const el = document.getElementById('contactOffcanvas');
+                    if (!offcanvasInstance) offcanvasInstance = new bootstrap.Offcanvas(el);
+                    return offcanvasInstance;
+                }
+
+                // --- Edición inline del nombre ---
+                function placeCaretEndEl(el){
+                    try{
+                        const r = document.createRange();
+                        r.selectNodeContents(el); r.collapse(false);
+                        const s = window.getSelection();
+                        s.removeAllRanges(); s.addRange(r);
+                    }catch{}
+                }
+                function enterEditContact(){
+                    if (isEditingContact) return;
+                    isEditingContact = true;
+                    const $name = $('#oc-name');
+                    $name.attr('contenteditable', 'true').focus();
+                    placeCaretEndEl($name.get(0));
+                    $('#oc-btnEditName').hide();
+                    $('#oc-btnSaveName').show().prop('disabled', true);
+
+                    $name.on('input.contact', function(){
+                        const v = ($name.text() || '').trim();
+                        $('#oc-btnSaveName').prop('disabled', (v.length === 0 || v === currentContactName));
+                        $('#oc-avatar').text((v || 'C').trim().substring(0,1).toUpperCase());
+                    });
+
+                    $name.on('keydown.contact', function(ev){
+                        if (ev.key === 'Enter'){ ev.preventDefault(); saveContactName(); }
+                        if (ev.key === 'Escape'){ ev.preventDefault(); exitEditContact(false); }
+                    });
+                }
+                function exitEditContact(saved){
+                    if (!isEditingContact) return;
+                    const $name = $('#oc-name');
+                    if (!saved){
+                        $name.text(currentContactName);
+                        $('#oc-avatar').text((currentContactName || 'C').trim().substring(0,1).toUpperCase());
+                    }else{
+                        currentContactName = ($name.text() || '').trim();
+                    }
+                    $name.removeAttr('contenteditable').off('.contact');
+                    $('#oc-btnSaveName').hide();
+                    $('#oc-btnEditName').show();
+                    isEditingContact = false;
+                }
+
+                async function saveContactName(){
+                    const id = currentContactId;
+                    const nombre = ($('#oc-name').text() || '').trim();
+                    if (!id || id <= 0){ alert('Id inválido'); return; }
+                    if (!nombre){ alert('Ingrese un nombre'); return; }
+
+                    try{
+                        $('#oc-btnSaveName').prop('disabled', true);
+                        const url = '@Url.Action("ActualizarNombre", "Contacto")';
+                        const res = await fetch(url, {
+                            method:'POST',
+                            headers:{ 'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest' },
+                            body: JSON.stringify({ id, nombre })
+                        });
+                        if (!res.ok){
+                            const msg = await res.text();
+                            alert(`No se pudo guardar (${res.status}). ${msg}`);
+                            $('#oc-btnSaveName').prop('disabled', false);
+                            return;
+                        }
+
+                        // Actualizar fila en la tabla
+                        const cell = document.getElementById(`cname-${id}`);
+                        if (cell) cell.textContent = nombre;
+
+                        // Actualizar data-name en botones de la fila
+                        const $row = $(`#contactosTable button.btn-view[data-id="${id}"]`).closest('tr');
+                        $row.find('.btn-view').each(function(){ $(this).attr('data-name', nombre); });
+
+                        exitEditContact(true);
+                    }catch(err){
+                        alert(`Error: ${err?.message ?? err}`);
+                        $('#oc-btnSaveName').prop('disabled', false);
+                    }
+                }
+
+                // --- Cargar SOLO la última conversación (offcanvas) ---
+                async function loadLastConversationByPhone(phone, displayName){
+                    $('#oc-conv-info').text('');
+                    $('#oc-conv-msg').html('<div class="p-2 text-muted">Cargando última conversación...</div>');
+
+                    try{
+                        const url = '@Url.Action("GetContactConversations", "Chat")' + '?phone=' + encodeURIComponent(phone || '');
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        const convs = data.conversations || [];
+
+                        if (convs.length === 0){
+                            $('#oc-conv-info').text('Sin conversaciones.');
+                            $('#oc-conv-msg').html('<div class="p-2 text-muted">Este contacto no tiene conversaciones.</div>');
+                            return;
+                        }
+
+                        // Elegimos la última por lastActivityAt (o startedAt si no hay)
+                        const sorted = convs.slice().sort((a,b)=>{
+                            const ad = new Date(a.lastActivityAt || a.startedAt || 0);
+                            const bd = new Date(b.lastActivityAt || b.startedAt || 0);
+                            return bd - ad; // desc
+                        });
+                        const last = sorted[0];
+
+                        $('#oc-conv-info').text(`Conversación #${last.id} — Estado: ${last.status || 'open'}`);
+
+                        // Cargamos mensajes de esa conversación
+                        const urlMsg = '@Url.Action("GetConversationMessages", "Chat")' + '?conversationId=' + encodeURIComponent(last.id);
+                        const resMsg = await fetch(urlMsg);
+                        const dataMsg = await resMsg.json();
+                        const msgs = dataMsg.messages || [];
+                        renderOcMessages(msgs);
+                    }catch(err){
+                        console.error('Error cargando última conversación:', err);
+                        $('#oc-conv-info').text('Error cargando conversación.');
+                        $('#oc-conv-msg').html('<div class="p-2 text-danger">Error cargando mensajes</div>');
+                    }
+                }
+
+                function renderOcMessages(msgs){
+                    const $wrap = $('#oc-conv-msg').empty();
+                    if (!msgs.length){
+                        $wrap.html('<div class="p-2 text-muted">Sin mensajes</div>');
+                        return;
+                    }
+                    msgs.sort((a,b)=> new Date(a.sentAt) - new Date(b.sentAt));
+                    msgs.forEach(m=>{
+                        const isAgent = (m.sender === 'agent');
+                        const $row = $('<div class="msg-row"></div>').addClass(isAgent ? 'agent' : 'contact');
+                        $row.append(`<div class="bubble-meta">${fmtDateTimeCR(m.sentAt)} — ${isAgent ? 'Tú' : 'Contacto'}</div>`);
+                        $row.append(`<div class="bubble ${isAgent ? 'agent' : 'contact'}">${esc(m.message || '')}</div>`);
+                        $wrap.append($row);
+                    });
+                    $wrap.scrollTop($wrap.prop('scrollHeight'));
+                }
+
+                // Abrir Offcanvas desde botón "Ver"
+                $('#contactosTable tbody').on('click', '.btn-view', function (e) {
+                    e.preventDefault();
+                    const $btn = $(this);
+
+                    currentContactId = parseInt($btn.data('id'), 10) || 0;
+                    currentContactName = String($btn.data('name') ?? '').trim();
+                    currentContactPhone = String($btn.data('phone') ?? '').trim();
+                    isEditingContact = false;
+
+                    // Poblar offcanvas (datos)
+                    $('#oc-name').text(currentContactName).removeAttr('contenteditable').off('.contact');
+                    $('#oc-avatar').text((currentContactName || 'C').trim().substring(0,1).toUpperCase());
+                    $('#oc-btnEditName').show().off('click').on('click', enterEditContact);
+                    $('#oc-btnSaveName').hide().off('click').on('click', saveContactName);
+
+                    $('#oc-phone').text(currentContactPhone || '');
+                    $('#oc-country').text($btn.data('country') ?? '');
+                    $('#oc-last').text($btn.data('lastmessage') ?? '');
+
+                    // Cargar solo la última conversación
+                    loadLastConversationByPhone(currentContactPhone, currentContactName);
+
+                    // Botón "Ver todo" -> abre modal completo con el mismo contacto
+                    $('#oc-btn-open-full').off('click').on('click', function(){
+                        loadConversationsByPhone(currentContactPhone, currentContactName);
+                    });
+
+                    // Mostrar
+                    getOffcanvas().show();
+                });
+
+                // ====== Historial Completo (modal existente) ======
+                var convModal = new bootstrap.Modal(document.getElementById('convModal'));
+                var $convList = $('#convList');
+                var $convInfo = $('#convInfo');
+                var $convMessages = $('#convMessages');
+                var $convTitleName = $('#convModalContactName');
+                var $convTitlePhone = $('#convModalContactPhone');
+
+                async function loadConversationsByPhone(phone, name) {
+                    $convTitleName.text(name || phone);
+                    $convTitlePhone.text(phone || '');
+                    $convList.html('<div class="p-2 text-muted">Cargando conversaciones...</div>');
+                    $convInfo.text('');
+                    $convMessages.html('');
+                    try {
+                        const url = '@Url.Action("GetContactConversations", "Chat")' + '?phone=' + encodeURIComponent(phone || '');
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        const convs = data.conversations || [];
+                        if (convs.length === 0) $convList.html('<div class="p-2 text-muted">Sin conversaciones</div>');
+                        else renderConvList(convs);
+                        convModal.show();
+                    } catch (err) {
+                        console.error('Error cargando conversaciones:', err);
+                        $convList.html('<div class="p-2 text-danger">Error cargando conversaciones</div>');
+                        convModal.show();
+                    }
+                }
+
+                function renderConvList(convs) {
+                    $convList.empty();
+                    convs.forEach(c => {
+                        var a = $('<a class="list-group-item list-group-item-action" href="#"></a>');
+                        a.html(`
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div><strong>#${c.id}</strong> — ${esc(c.status || 'open')}</div>
+                                    <div class="small text-muted">Inicio: ${fmtDateTimeCR(c.startedAt)}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small text-muted">Última: ${c.lastActivityAt ? fmtDateTimeCR(c.lastActivityAt) : '—'}</div>
+                                </div>
+                            </div>
+                        `);
+                        a.on('click', async function(ev) {
+                            ev.preventDefault();
+                            $convList.find('.active').removeClass('active');
+                            a.addClass('active');
+                            await loadConversationMessages(c.id, c);
+                        });
+                        $convList.append(a);
+                    });
+                    var first = $convList.find('.list-group-item').get(0);
+                    if (first) first.click();
+                }
+
+                async function loadConversationMessages(conversationId, convObj) {
+                    $convInfo.text(`Conversación #${conversationId} — Estado: ${convObj.status || 'open'}`);
+                    $convMessages.html('<div class="p-2 text-muted">Cargando mensajes...</div>');
+                    try {
+                        const url = '@Url.Action("GetConversationMessages", "Chat")' + '?conversationId=' + encodeURIComponent(conversationId);
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        const msgs = data.messages || [];
+                        renderConvMessages(msgs);
+                    } catch (err) {
+                        console.error('Error cargando mensajes:', err);
+                        $convMessages.html('<div class="p-2 text-danger">Error cargando mensajes</div>');
+                    }
+                }
+
+                function renderConvMessages(msgs) {
+                    $convMessages.empty();
+                    if (!msgs.length) { $convMessages.html('<div class="p-2 text-muted">Sin mensajes</div>'); return; }
+                    msgs.sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
+                    msgs.forEach(m => {
+                        var isAgent = (m.sender === 'agent');
+                        var $wrap = $('<div class="mb-3"></div>').addClass(isAgent ? 'text-end' : 'text-start');
+                        $wrap.html(`
+                            <div class="small text-muted">${fmtDateTimeCR(m.sentAt)}</div>
+                            <div class="p-2" style="background:${isAgent ? '#d1ecf1' : '#f1f1f1'}; border-radius:10px; display:inline-block; max-width:75%;">
+                                <div class="fw-semibold mb-1">${isAgent ? 'Tú' : 'Contacto'}</div>
+                                ${esc(m.message || '')}
+                            </div>
+                        `);
+                        $convMessages.append($wrap);
+                    });
+                    $convMessages.scrollTop($convMessages.prop('scrollHeight'));
+                }
+
+                // Handlers
+                $('#oc-btnEditName').on('click', enterEditContact);
+                $('#oc-btnSaveName').on('click', saveContactName);
+            });
+        })(jQuery);
+    </script>
+}

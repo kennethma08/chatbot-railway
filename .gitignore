@@ -1,0 +1,23 @@
+﻿# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+bin/
+obj/
+out/
+
+# VS Code
+.vscode/
+
+# SO
+Thumbs.db
+.DS_Store
+
+# ASP.NET (ajusta a tu gusto)
+appsettings.Development.json
+# Descomenta si no querés versionarlo:
+# Properties/launchSettings.json

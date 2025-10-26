@@ -1,0 +1,129 @@
+﻿:root {
+    --violet-900: #310353;
+    --violet-600: #A860E0;
+    --violet-500: #B57EDC;
+    --violet-300: #CDABE6;
+    --bs-border-color: #ece6f6;
+    --card-radius: 16px;
+}
+
+/* Card base */
+.card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--card-radius);
+    box-shadow: 0 6px 20px rgba(49,3,83,.05);
+}
+
+/* KPI con overlay animado */
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    border: 0;
+}
+
+    .kpi-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+
+    .kpi-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background-size: 400% 200%;
+        animation: kpiShift 10s ease-in-out infinite;
+        -webkit-animation: kpiShift 10s ease-in-out infinite;
+        filter: saturate(1.15) contrast(1.05);
+        opacity: .98;
+        /* hints de rendimiento y Safari */
+        will-change: background-position;
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+/* Paletas por tarjeta */
+.kpi-1::before, .kpi-2::before, .kpi-3::before {
+    background-image: linear-gradient(120deg, var(--violet-900), var(--violet-600), var(--violet-900));
+}
+
+
+@keyframes kpiShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@-webkit-keyframes kpiShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Etiquetas y botones (lo que ya tenías) */
+.kpi-label {
+    color: rgba(255,255,255,.85);
+    font-size: .9rem;
+}
+
+.kpi-value {
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+.btn-outline-secondary {
+    border-color: #e7dffc;
+    color: #4a3b71;
+    background: #fff;
+}
+
+    .btn-outline-secondary:hover {
+        border-color: var(--violet-600);
+        color: #fff;
+        background: var(--violet-600);
+    }
+
+#dateRange {
+    border-color: #e7dffc;
+}
+
+    #dateRange:focus {
+        border-color: var(--violet-600);
+        box-shadow: 0 0 0 .2rem rgba(168,96,224,.15);
+    }
+
+/* Charts */
+.chart-wrap {
+    position: relative;
+    height: 340px;
+}
+
+    .chart-wrap > canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+/* Tabla */
+thead.table-light {
+    --bs-table-bg: #f8f5fe;
+    --bs-table-color: #3e2464;
+}

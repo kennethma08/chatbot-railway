@@ -1,0 +1,552 @@
+﻿@using System.Text.Json
+@using WhatsappClient.Models
+@model List<UsuarioDto>
+
+@{
+    ViewData["Title"] = "Agentes";
+
+    var closedTodayByUser = ViewBag.ClosedTodayByUser as Dictionary<int, int> ?? new();
+    var lastMinByUser = ViewBag.LastMinByUser as Dictionary<int, int> ?? new();
+
+    var kOpen = (int)(ViewBag.KpiOpen ?? 0);
+    var kPromCarga = (double)(ViewBag.KpiPromCarga ?? 0d);
+
+    var kCierresHoy = closedTodayByUser.Values.Sum();
+}
+
+<div class="container-fluid px-3 px-md-4 py-3">
+
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h2 class="mb-0 fw-bold">Agentes</h2>
+        <div class="text-muted small">Actualizado: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+
+    <div class="row g-3 mb-2">
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card kpi-card kpi-1 h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Conversaciones abiertas</h6>
+                        <h3 class="mb-0 fw-bold text-white">@kOpen</h3>
+                    </div>
+                    <i class="bx bx-message-rounded-dots kpi-icon text-white-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card kpi-card kpi-1 h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Carga promedio</h6>
+                        <h3 class="mb-0 fw-bold text-white">@kPromCarga.ToString("0.0")</h3>
+                    </div>
+                    <i class="bx bx-line-chart kpi-icon text-white-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="card kpi-card kpi-1 h-100 shadow-sm">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Cierres hoy</h6>
+                        <h3 class="mb-0 fw-bold text-white">@kCierresHoy</h3>
+                    </div>
+                    <i class="bx bx-check-circle kpi-icon text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-contacts shadow-sm">
+        <div class="card-body p-0">
+
+            <div class="dt-custom-filter px-3 pt-3 pb-2">
+                <div class="dt-length-custom d-flex align-items-center gap-2">
+                    <span>Mostrar</span>
+                    <select id="agentesLength" class="form-select form-select-sm">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span>registros</span>
+                </div>
+
+                <div class="dt-search-pill">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                    <input id="agentesSearch"
+                           type="search"
+                           class="form-control"
+                           placeholder="Buscar agente o correo…"
+                           aria-label="Buscar agentes" />
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="agentesTable" class="table align-middle mb-0 agents-table table-contacts" style="width:100%;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Agente</th>
+                            <th>Correo</th>
+                            <th class="text-center">Cierres hoy</th>
+                            <th class="text-end" style="width:140px;">Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No hay agentes para mostrar.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var u in Model)
+                            {
+                                var cierres = closedTodayByUser.TryGetValue(u.Id, out var v1) ? v1 : 0;
+                                var mins = lastMinByUser.TryGetValue(u.Id, out var v2) ? v2 : 0;
+                                var cls = cierres >= 10 ? "count-high" : (cierres >= 5 ? "count-med" : "count-low");
+
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar">@((u.Nombre ?? "A").Trim().Substring(0, 1).ToUpperInvariant())</div>
+                                            <div class="fw-semibold" id="name-@u.Id">@u.Nombre</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted">@u.Correo</td>
+                                    <td class="text-center">
+                                        <span class="count-pill @cls">@cierres</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="ghost btn-view"
+                                                onclick='openDrawer(@u.Id, @Html.Raw(JsonSerializer.Serialize(u.Nombre ?? "Agente")), @Html.Raw(JsonSerializer.Serialize(u.Correo ?? "")))'>
+                                            Ver
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="hd">
+        <h3 id="d-title" class="mb-0">Cierres — Agente</h3>
+        <button class="close-btn" type="button" onclick="closeDrawer()" style="background:#01295F; border-radius:12px; color:#fff;">
+            Cerrar
+        </button>
+    </div>
+    <div class="bd">
+        <input type="hidden" id="d-user-id" />
+
+        <div class="tile">
+            <div class="d-flex align-items-center gap-3">
+                <div id="d-avatar" class="avatar">A</div>
+
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div id="d-name" class="fw-bold" aria-label="Nombre del agente"></div>
+                        <button type="button" id="btn-edit" class="icon-btn" title="Editar nombre" aria-label="Editar nombre">
+                            <i class="bx bx-pencil"></i>
+                        </button>
+                        <button type="button" id="btn-save" class="btn btn-primary btn-sm" style="display:none;">
+                            Guardar
+                        </button>
+                    </div>
+                    <div id="d-email" class="muted small mt-1">correo@empresa.com</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile">
+            <div class="muted small mb-2">Resumen</div>
+            <div class="row g-2">
+                <div class="col-12">
+                    <span class="badge-mini">Cierres totales</span>
+                    <div id="d-total" class="fw-bold mt-1">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile">
+            <div class="muted small mb-2">Listado de cierres</div>
+            <div id="d-list"></div>
+        </div>
+    </div>
+</aside>
+
+@section Styles {
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/agentes.css" asp-append-version="true" />
+    <style>
+        .icon-btn {
+            border: 0;
+            background: transparent;
+            padding: 4px 6px;
+            border-radius: 8px;
+            line-height: 1;
+        }
+
+            .icon-btn:hover {
+                background: rgba(0,0,0,.06);
+            }
+
+        #d-name[contenteditable="true"] {
+            outline: 2px dashed #e3e3f5;
+            border-radius: 6px;
+            padding: 2px 4px;
+        }
+
+        table.dataTable {
+            width: 100% !important;
+        }
+
+        .dt-custom-filter {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dt-search-pill {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            border: 1px solid #eef0f3;
+            padding: .25rem .5rem;
+            border-radius: 999px;
+        }
+
+            .dt-search-pill .form-control {
+                border: 0;
+                outline: 0;
+                box-shadow: none;
+                min-width: 220px;
+            }
+
+            .dt-search-pill i {
+                opacity: .6;
+            }
+
+        .dt-length-custom select {
+            width: auto;
+        }
+
+        /* ---------- Encabezado de tabla: blanco + texto negro ---------- */
+        /* Forzar fondo blanco y texto negro incluso si hay estilos globales/tema */
+        #agentesTable thead,
+        #agentesTable thead tr,
+        #agentesTable thead th,
+        #agentesTable thead td {
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+            /* Borde inferior más suave en el header */
+            #agentesTable thead th,
+            #agentesTable thead td {
+                border-bottom: 1px solid #e9ecef !important;
+            }
+                /* Asegurar color negro en th ordenables (DataTables) */
+                #agentesTable thead th.dt-orderable-asc,
+                #agentesTable thead th.dt-orderable-desc {
+                    color: #000 !important;
+                }
+
+        /* Responsive tweaks for filters */
+        @@media (max-width: 575.98px) {
+            .dt-custom-filter {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .dt-length-custom {
+                order: 2;
+            }
+
+            .dt-search-pill {
+                order: 1;
+                width: 100%;
+            }
+
+                .dt-search-pill .form-control {
+                    min-width: 0;
+                    width: 100%;
+                }
+        }
+
+        /* Optional: nicer child rows from DataTables Responsive */
+        table.dataTable > tbody > tr.child .dtr-details {
+            width: 100%;
+        }
+
+            table.dataTable > tbody > tr.child .dtr-details > li {
+                border: 0 !important;
+                padding: .25rem .25rem !important;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        const $ = s => document.querySelector(s);
+        let currentUserId = null;
+        let originalName = "";
+        let isEditing = false;
+
+        (function ($jq) {
+            $jq(function () {
+                try { if ($jq.fn.DataTable.isDataTable('#agentesTable')) $jq('#agentesTable').DataTable().destroy(); } catch { }
+                const pageLen = 5;
+
+                const DT = window.DataTable || $jq.fn.dataTable;
+
+                const table = $jq('#agentesTable').DataTable({
+                    dom: 't<"dt-foot d-flex flex-wrap gap-2 align-items-center justify-content-between px-3 pb-3"ip>',
+                    language: { url: 'https://cdn.datatables.net/plug-ins/2.3.4/i18n/es-ES.json' },
+                    pageLength: pageLen,
+                    lengthMenu: [5,10,25,50,100],
+                    autoWidth: false,
+                    ordering: true,
+                    responsive: {
+                        details: {
+                            type: 'inline',
+                            target: 'tr',
+                            renderer: DT.Responsive
+                                ? DT.Responsive.renderer.tableAll({ tableClass: 'table table-sm table-borderless mb-0' })
+                                : null
+                        }
+                    },
+                    columnDefs: [
+                        { orderable: false, searchable: false, targets: -1 },
+                        { responsivePriority: 1, targets: 0 },
+                        { responsivePriority: 2, targets: -1 },
+                        { responsivePriority: 3, targets: 2 },
+                        { responsivePriority: 4, targets: 1 }
+                    ],
+                    order: [[3, 'desc']]
+                });
+
+                const $len = $jq('#agentesLength');
+                $len.val(String(table.page.len()));
+                $len.on('change', function () {
+                    const v = parseInt(this.value || '5', 10);
+                    table.page.len(v).draw(false);
+                });
+
+                const debounce = (fn, wait) => { let t; return function(){ clearTimeout(t); t=setTimeout(()=>fn.apply(this, arguments), wait); }; };
+                $jq('#agentesSearch')
+                    .on('input', debounce(function () { table.search(this.value || '').draw(); }, 200))
+                    .on('keydown', function (e) { if (e.key === 'Escape') { $jq(this).val(''); table.search('').draw(); } });
+            });
+        })(jQuery);
+
+        const fmtDate = iso => {
+            if (!iso) return "—";
+            try { const d = new Date(iso); return Number.isNaN(d.getTime()) ? iso : d.toLocaleString(); }
+            catch { return iso; }
+        };
+
+        function closeDrawer() {
+            const d = $('#drawer');
+            if (d) d.classList.remove('open');
+            exitEditMode(false);
+        }
+
+        async function openDrawer(userId, name, email) {
+            if (!$('#drawer')) return;
+
+            currentUserId = userId;
+            originalName = (name || 'Agente').trim();
+            isEditing = false;
+
+            $('#d-user-id').value = userId;
+            $('#d-title').textContent = `Cierres totales — ${originalName}`;
+            $('#d-name').textContent  = originalName;
+            $('#d-email').textContent = email || '—';
+            $('#d-avatar').textContent = originalName.substring(0,1).toUpperCase();
+
+            $('#d-name').removeAttribute('contenteditable');
+            $('#btn-save').style.display = 'none';
+            $('#btn-edit').style.display = 'inline-flex';
+
+            $('#btn-edit').onclick = enterEditMode;
+            $('#btn-save').onclick = saveAgentName;
+
+            $('#d-name').oninput = () => {
+                const v = ($('#d-name').textContent || '').trim() || 'Agente';
+                $('#d-avatar').textContent = v.substring(0,1).toUpperCase();
+                $('#btn-save').disabled = (v === originalName || v.length === 0);
+            };
+
+            $('#d-total').textContent = '—';
+            $('#d-list').innerHTML    = `<div class="muted">Cargando...</div>`;
+
+            $('#drawer').classList.add('open');
+
+            const url = '@Url.Action("ClosedByAgent", "Agentes")' + `?id=${encodeURIComponent(userId)}`;
+
+            try {
+                const res  = await fetch(url, { headers: { 'X-Requested-With':'XMLHttpRequest' }});
+                if (!res.ok) {
+                    $('#d-list').innerHTML = `<div class="muted">HTTP ${res.status}</div>`;
+                    return;
+                }
+
+                const text = await res.text();
+                const json = text ? JSON.parse(text) : { items: [], total: 0 };
+
+                const items = Array.isArray(json.items) ? json.items : [];
+                const total = Number.isFinite(json.total) ? json.total : items.length;
+
+                $('#d-total').textContent = total;
+
+                if (items.length === 0) {
+                    $('#d-list').innerHTML = `<div class="muted">Sin cierres registrados para este agente.</div>`;
+                    return;
+                }
+
+                const frag = document.createDocumentFragment();
+                items.forEach(it => {
+                    const row = document.createElement('div');
+                    row.className = 'conv';
+                    row.innerHTML = `
+                        <div>
+                            <div class="fw-bold">#${it.id}</div>
+                            <div class="muted small">Contacto: ${it.contactPhone ?? '—'}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge-mini">Inicio: ${fmtDate(it.startedAt)}</div>
+                            <div class="muted mt-1">Cierre: ${fmtDate(it.endedAt)}</div>
+                        </div>
+                    `;
+                    frag.appendChild(row);
+                });
+                $('#d-list').innerHTML = '';
+                $('#d-list').appendChild(frag);
+
+            } catch (err) {
+                $('#d-list').innerHTML = `<div class="muted">Error al cargar: ${err?.message ?? err}</div>`;
+            }
+        }
+
+        function placeCaretEnd(el){
+            const r = document.createRange();
+            r.selectNodeContents(el);
+            r.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(r);
+        }
+
+        function enterEditMode() {
+            if (isEditing) return;
+            isEditing = true;
+
+            const nameEl = $('#d-name');
+            nameEl.setAttribute('contenteditable', 'true');
+            nameEl.focus();
+            placeCaretEnd(nameEl);
+
+            $('#btn-edit').style.display = 'none';
+            $('#btn-save').style.display = 'inline-flex';
+            $('#btn-save').disabled = true;
+
+            nameEl.onkeydown = (ev) => {
+                if (ev.key === 'Enter') { ev.preventDefault(); saveAgentName(); }
+                if (ev.key === 'Escape') { ev.preventDefault(); exitEditMode(false); }
+            };
+        }
+
+        function exitEditMode(saved) {
+            if (!isEditing) return;
+            const nameEl = $('#d-name');
+
+            if (!saved) {
+                nameEl.textContent = originalName;
+                $('#d-avatar').textContent = originalName.substring(0,1).toUpperCase();
+            } else {
+                originalName = (nameEl.textContent || '').trim();
+            }
+
+            nameEl.removeAttribute('contenteditable');
+            nameEl.onkeydown = null;
+
+            $('#btn-save').style.display = 'none';
+            $('#btn-edit').style.display = 'inline-flex';
+            isEditing = false;
+        }
+
+        async function saveAgentName() {
+            const id = currentUserId;
+            const nombre = ($('#d-name')?.textContent || '').trim();
+
+            if (!id || id <= 0) { alert('Id inválido.'); return; }
+            if (!nombre) { alert('Ingrese un nombre.'); return; }
+
+            const url = '@Url.Action("ActualizarNombre", "Agentes")';
+            try {
+                $('#btn-save').disabled = true;
+
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ id, nombre })
+                });
+
+                if (!res.ok) {
+                    const msg = await res.text();
+                    alert(`No se pudo guardar (${res.status}). ${msg}`);
+                    $('#btn-save').disabled = false;
+                    return;
+                }
+
+                $('#d-avatar').textContent = nombre.substring(0,1).toUpperCase();
+
+                const cell = document.getElementById(`name-${id}`);
+                if (cell) cell.textContent = nombre;
+
+                exitEditMode(true);
+
+            } catch (err) {
+                alert(`Error: ${err?.message ?? err}`);
+                $('#btn-save').disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = document.querySelector('.agents-table');
+            if (!table) return;
+
+            table.addEventListener('dblclick', (ev) => {
+                const tr = ev.target.closest('tbody tr');
+                if (!tr) return;
+                const btn = tr.querySelector('.btn-view');
+                if (btn) btn.click();
+            });
+
+            let lastTap = 0;
+            table.addEventListener('touchend', (ev) => {
+                const now = Date.now();
+                if (now - lastTap > 0 && now - lastTap < 350) {
+                    const tr = ev.target.closest('tbody tr');
+                    if (!tr) return;
+                    const btn = tr.querySelector('.btn-view');
+                    if (btn) btn.click();
+                }
+                lastTap = now;
+            }, { passive: true });
+        });
+    </script>
+}

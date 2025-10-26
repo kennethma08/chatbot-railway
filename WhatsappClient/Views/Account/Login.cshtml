@@ -1,0 +1,350 @@
+﻿@model WhatsappClient.Controllers.AccountController.LoginVm
+@{
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login ulu</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&family=Poppins&display=swap" rel="stylesheet">
+
+
+    <link rel="stylesheet" href="~/css/login.css" />
+
+    <style>
+        :root {
+            /* Paleta */
+            --bg-dark: #1B042D;
+            --bg-deep: #310353;
+            --violet-600: #A860E0;
+            --violet-500: #B57EDC;
+            --violet-300: #CDABE6;
+            --btn-solid: var(--bg-deep);
+            --btn-hover: var(--violet-600);
+        }
+
+        html, body {
+            height: 100%
+        }
+
+        html {
+            font-size: 15px
+        }
+
+        body {
+            margin: 0;
+            font-family: "Montserrat",sans-serif;
+            background: radial-gradient(900px circle at 15% 10%, rgba(168,96,224,.22) 0%, rgba(168,96,224,0) 55%), radial-gradient(780px circle at 80% 80%, rgba(181,126,220,.18) 0%, rgba(181,126,220,0) 60%), linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-deep) 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit
+        }
+
+        .contenedor-login {
+            min-height: 100vh
+        }
+
+        .card-contenedor-login {
+            background: rgba(255,255,255,.24);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,.32);
+            border-radius: 18px;
+            box-shadow: 0 16px 36px rgba(27,4,45,.55);
+        }
+
+        .titulo-login {
+            letter-spacing: .5px
+        }
+
+        .form-floating > label {
+            color: #eef1f6
+        }
+
+        .form-control {
+            background: rgba(255,255,255,.16);
+            border: 1px solid rgba(255,255,255,.28);
+            color: #fff;
+        }
+
+            .form-control:focus {
+                background: rgba(255,255,255,.20);
+                color: #fff;
+                box-shadow: 0 0 0 .25rem rgba(168,96,224,.35);
+                border-color: var(--violet-600);
+                outline: 0;
+            }
+
+        .btn-gradient {
+            background-color: var(--btn-solid);
+            color: #fff;
+            border: 1px solid var(--violet-600);
+            border-radius: 12px;
+            padding: .8rem 2.5rem;
+            font-weight: 700;
+            letter-spacing: .3px;
+            transition: transform .08s ease, box-shadow .2s ease, background-color .15s ease, border-color .15s ease;
+        }
+
+            .btn-gradient:hover,
+            .btn-gradient:focus {
+                background-color: var(--btn-hover);
+                border-color: var(--btn-hover);
+                box-shadow: 0 12px 26px rgba(168,96,224,.35);
+            }
+
+            .btn-gradient:active {
+                transform: translateY(1px)
+            }
+
+        footer {
+            color: #fff;
+            font-weight: 700
+        }
+
+            footer .btn-ticket {
+                background-color: var(--btn-solid);
+                color: #fff;
+                border: 1px solid var(--violet-600);
+                border-radius: 12px;
+                padding: .5rem 1rem;
+                font-weight: 700;
+                transition: background-color .15s ease, border-color .15s ease, box-shadow .2s ease;
+            }
+
+                footer .btn-ticket:hover,
+                footer .btn-ticket:focus {
+                    background-color: var(--btn-hover);
+                    border-color: var(--btn-hover);
+                    box-shadow: 0 8px 20px rgba(168,96,224,.30);
+                }
+
+        .MontserratBol {
+            font-weight: 700
+        }
+
+        body.swal2-height-auto {
+            height: 100vh !important
+        }
+
+        @@media (max-width: 767px) {
+            .logo {
+                max-height: 90px
+            }
+        }
+
+
+        .logo {
+            max-height: clamp(500px, 22vh, 280px);
+        }
+
+        @@media (max-width: 767.98px) {
+            .logo {
+                max-height: 300px;
+            }
+        }
+
+        #bg-wrap {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+            #bg-wrap > svg {
+                width: 100%;
+                height: 100%;
+                display: block;
+            }
+
+
+
+        /* Footer: layout en 3 columnas (izq | centro | der) */
+        .footer-bar {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: .5rem 1rem;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .footer-center {
+            justify-self: center;
+            text-align: center;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        /* Responsive */
+        @@media (max-width: 576px) {
+            .footer-bar {
+                grid-template-columns: 1fr;
+                gap: .35rem;
+            }
+
+            .footer-left {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .footer-right {
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+
+<body class="container-fluid d-flex flex-column">
+    <div id="bg-wrap">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+
+                <radialGradient id="G1" cx="50%" cy="50%" fx="0.6%" fy="50%" r=".5">
+                    <animate attributeName="fx" dur="30s" values="0%;3%;0%" repeatCount="indefinite" />
+                    <stop offset="0%" stop-color="#A860E0" stop-opacity="1" />
+                    <stop offset="100%" stop-color="#A860E0" stop-opacity="0" />
+                </radialGradient>
+
+                <radialGradient id="G2" cx="50%" cy="50%" fx="2%" fy="50%" r=".5">
+                    <animate attributeName="fx" dur="26s" values="0%;4%;0%" repeatCount="indefinite" />
+                    <stop offset="0%" stop-color="#B57EDC" stop-opacity="1" />
+                    <stop offset="100%" stop-color="#B57EDC" stop-opacity="0" />
+                </radialGradient>
+
+                <radialGradient id="G3" cx="50%" cy="50%" fx="1%" fy="50%" r=".5">
+                    <animate attributeName="fx" dur="22s" values="0%;5%;0%" repeatCount="indefinite" />
+                    <stop offset="0%" stop-color="#CDABE6" stop-opacity="0.95" />
+                    <stop offset="100%" stop-color="#CDABE6" stop-opacity="0" />
+                </radialGradient>
+
+                <radialGradient id="G4" cx="50%" cy="50%" fx="1.5%" fy="50%" r=".5">
+                    <animate attributeName="fx" dur="28s" values="0%;3%;0%" repeatCount="indefinite" />
+                    <stop offset="0%" stop-color="#310353" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="#310353" stop-opacity="0" />
+                </radialGradient>
+            </defs>
+
+            <rect x="12%" y="2%" width="100%" height="100%" fill="url(#G1)" transform="rotate(330 50 50)">
+                <animate attributeName="x" dur="22s" values="25%;0%;25%" repeatCount="indefinite" />
+                <animate attributeName="y" dur="24s" values="0%;25%;0%" repeatCount="indefinite" />
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite" />
+            </rect>
+
+            <rect x="-3%" y="34%" width="100%" height="100%" fill="url(#G2)" transform="rotate(255 50 50)">
+                <animate attributeName="x" dur="25s" values="-25%;0%;-25%" repeatCount="indefinite" />
+                <animate attributeName="y" dur="26s" values="0%;50%;0%" repeatCount="indefinite" />
+                <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="14s" repeatCount="indefinite" />
+            </rect>
+
+            <rect x="8%" y="14%" width="100%" height="100%" fill="url(#G3)" transform="rotate(140 50 50)">
+                <animate attributeName="x" dur="27s" values="0%;25%;0%" repeatCount="indefinite" />
+                <animate attributeName="y" dur="20s" values="0%;25%;0%" repeatCount="indefinite" />
+                <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="11s" repeatCount="indefinite" />
+            </rect>
+
+            <rect x="0%" y="0%" width="100%" height="100%" fill="url(#G4)" transform="rotate(30 50 50)">
+                <animate attributeName="x" dur="30s" values="10%;-10%;10%" repeatCount="indefinite" />
+                <animate attributeName="y" dur="32s" values="-10%;10%;-10%" repeatCount="indefinite" />
+                <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="18s" repeatCount="indefinite" />
+            </rect>
+        </svg>
+    </div>
+
+    <main class="row align-items-center justify-content-center flex-grow-1 py-4">
+
+        <section class="col-md-6 text-center mb-4 mb-md-0">
+            <img src="/assets/images/Logo-en-Negativo-ULU.png" alt="Logo" class="logo img-fluid" />
+        </section>
+
+        <!-- Columna derecha login -->
+        <section class="col-md-6 d-flex justify-content-center px-3 px-md-4 px-lg-5">
+            <div class="w-100 card-contenedor-login py-md-4 py-3 px-3 px-md-4 px-lg-5">
+                <h2 class="text-center text-white titulo-login py-md-3 py-2 MontserratBol">¡Bienvenido!</h2>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger text-start mt-2">
+                        @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@err.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <form asp-action="Login" asp-controller="Account" method="post" class="row" autocomplete="on">
+                    @Html.AntiForgeryToken()
+
+                    <div class="col-12 px-2 px-md-3">
+                        <div class="form-floating py-2">
+                            <input asp-for="Email" type="email" class="form-control" id="correo" placeholder="Correo electrónico" required autocomplete="username email" />
+                            <label for="correo">Correo electrónico</label>
+                        </div>
+
+                        <div class="form-floating py-2">
+                            <input asp-for="Password" type="password" class="form-control" id="contra" placeholder="Contraseña" required autocomplete="current-password" />
+                            <label for="contra">Contraseña</label>
+                        </div>
+
+                        <a class="text-white d-inline-block mt-1" href="#" id="olvidarContrasenia">
+                            <small>¿Olvidó su contraseña?</small>
+                        </a>
+                    </div>
+
+                    <div class="col-12 text-center pt-3">
+                        <button type="submit" class="btn-gradient">Iniciar sesión</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-auto py-2 footer-bar">
+        <div class="footer-left">
+            <a class="btn-ticket d-inline-block" href="https://soporte.cnet.co.cr/" target="_blank" rel="noopener">Soporte</a>
+            <span class="d-none d-sm-inline">2278-0869</span>
+            <span class="d-none d-sm-inline">|</span>
+        </div>
+
+        <div class="footer-center">
+            <span>
+                Producto ulu desarrollado y distribuido por
+                <a href="https://cnet.co.cr/es/" target="_blank" rel="noopener noreferrer" title="CNET TECHNOLOGY SYSTEMS">
+                    CNET TECHNOLOGY SYSTEMS
+                </a> © <span id="anioCopy"></span>
+            </span>
+        </div>
+
+        <div class="footer-right">
+            <p class="m-0">Version 1.0.0</p>
+        </div>
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('anioCopy').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

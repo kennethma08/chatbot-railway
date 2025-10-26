@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\assets\fonts\**" />
+    <Content Remove="wwwroot\assets\fonts\**" />
+    <EmbeddedResource Remove="wwwroot\assets\fonts\**" />
+    <None Remove="wwwroot\assets\fonts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\assets\css\style.css" />
+    <None Include="wwwroot\assets\images\user\avatar-1.jpg" />
+    <None Include="wwwroot\assets\images\user\avatar-2.jpg" />
+    <None Include="wwwroot\assets\js\component.js" />
+    <None Include="wwwroot\assets\js\fonts\custom-font.js" />
+    <None Include="wwwroot\assets\js\layout-compact.js" />
+    <None Include="wwwroot\assets\js\layout-horizontal.js" />
+    <None Include="wwwroot\assets\js\pcoded.js" />
+    <None Include="wwwroot\assets\js\plugins\bootstrap.min.js" />
+    <None Include="wwwroot\assets\js\plugins\feather.min.js" />
+    <None Include="wwwroot\assets\js\plugins\popper.min.js" />
+    <None Include="wwwroot\assets\js\plugins\simplebar.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Chart.js" Version="3.7.1" />
+    <PackageReference Include="runtime.native.System.Data.SqlClient.sni" Version="4.7.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+  </ItemGroup>
+
+</Project>

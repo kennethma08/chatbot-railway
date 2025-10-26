@@ -1,0 +1,481 @@
+﻿/* ====== CONTACTOS (DataTables + tabla estilo "Agentes") ====== */
+:root {
+    --ink: #222;
+    --muted: #6b7280;
+    --line: #eef2f7;
+    --chip: #eef6ff;
+    --badge: #eef1f6;
+    --badge-ink: #4b5563;
+}
+
+/* ===== Paleta pastel + utilidades ===== */
+:root {
+    --card: #fff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #eef2f7;
+    --border: #e9edf3;
+    --ok: #34c759;
+    --warn: #ffb020;
+    --err: #ff5a5f;
+    --primary: #1e90ff;
+    --chip: #eef6ff;
+    --thead: #f7f9fc;
+}
+
+/* === Zebra morado para Contactos === */
+:root {
+  --zebra-odd:  #f6effa; /* morado muy claro */
+  --zebra-even: #fbf7ff; /* aún más claro */
+  --zebra-hover:#ede2f6; /* hover */
+}
+
+/* Avatar circular con degradé suave */
+.avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg,#f3f0ff,#e9faff);
+    color: #383a4a;
+    font-weight: 800;
+    box-shadow: inset 0 0 0 1px #eef1f6;
+}
+
+/* Badges de estado (igual look que Agentes) */
+.badge-online {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #e8fff3;
+    color: #0a7a3f;
+    border: 1px solid #d7f7e5;
+}
+
+.badge-offline {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #eceff3;
+}
+
+/* Botón fantasma (acciones) */
+.ghost {
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: .15s transform ease,.15s box-shadow ease;
+}
+
+    .ghost:active {
+        transform: translateY(1px);
+    }
+
+.agents-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .agents-table thead th {
+        background: var(--thead);
+        color: #374151;
+        font-weight: 800;
+        border-bottom: 1px solid #edf0f5;
+        font-size: 12px;
+        text-align: left;
+        padding: 14px;
+    }
+
+    .agents-table tbody td {
+        padding: 14px;
+        border-bottom: 1px dashed var(--line);
+        vertical-align: middle;
+    }
+
+    .agents-table tbody tr:hover {
+        background: #fafbff;
+    }
+
+    .agents-table .text-end {
+        text-align: right;
+    }
+
+/* Filas alternadas */
+table.agents-table.table-contacts tbody tr:nth-child(odd)  { background-color: var(--zebra-odd); }
+table.agents-table.table-contacts tbody tr:nth-child(even) { background-color: var(--zebra-even); }
+
+/* Hover consistente en morado (sobre-escribe el hover azul previo) */
+table.agents-table.table-contacts tbody tr:hover {
+  background-color: var(--zebra-hover) !important;
+}
+
+/* Línea divisoria con leve tinte violeta para integrar el look */
+table.agents-table.table-contacts tbody td {
+  border-bottom-color: #eadcf4;
+}
+
+/* ===== DataTables integrado en la card ===== */
+.dataTables_wrapper .dt-head,
+.dataTables_wrapper .dt-foot {
+    background: #fff;
+}
+
+.dataTables_wrapper .dt-head {
+    padding-top: .75rem;
+}
+
+.dataTables_wrapper .dt-foot {
+    padding-bottom: .75rem;
+}
+
+.dataTables_wrapper .dt-head,
+.dataTables_wrapper .dt-foot {
+    /* que la cabecera/foot sigan la tarjeta */
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+}
+
+.card .dataTables_wrapper .table {
+    margin: 0;
+}
+
+/* Length (Mostrar N) */
+.dataTables_wrapper .dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 .75rem;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    background: #fff;
+}
+
+/* Search */
+.dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 .75rem 0 auto;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    width: 260px;
+    max-width: 100%;
+    outline: none;
+}
+
+/* Info + paginación */
+.dataTables_wrapper .dataTables_info {
+    color: var(--muted);
+    padding-top: .25rem;
+    margin-left: .75rem;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    display: flex;
+    gap: .25rem;
+    margin-right: .75rem;
+}
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        border: 1px solid var(--border) !important;
+        background: #fff !important;
+        color: #111827 !important;
+        border-radius: 10px !important;
+        padding: .35rem .6rem !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #fff !important;
+        }
+
+.table-contacts {
+    background: transparent !important;
+    color: inherit !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 6px 20px rgba(17, 24, 39, .06);
+}
+
+    .table-contacts thead th {
+        background: transparent !important;
+        color: inherit !important;
+        border-bottom: 1px solid var(--border);
+    }
+
+#contactosTable_filter input[type="search"],
+#contactosTable_filter .dt-input {
+    border-radius: 999px;
+    height: 42px;
+}
+
+.card-contacts {
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 6px 20px rgba(17, 24, 39, .06);
+    overflow: hidden;
+    background: var(--card);
+}
+
+    .card-contacts .table-contacts {
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .card-contacts .table-responsive {
+        overflow: hidden;
+        border-radius: inherit;
+    }
+
+    .card-contacts .dataTables_wrapper .dt-head,
+    .card-contacts .dataTables_wrapper .dt-foot {
+        background: transparent;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+.dt-custom-filter {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+    .dt-custom-filter .dataTables_length label {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin: 0;
+        color: var(--muted);
+        font-weight: 600;
+        height: 42px;
+    }
+
+    .dt-custom-filter .dataTables_length select {
+        height: 42px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .dt-custom-filter .dt-search-pill {
+        width: 420px;
+        max-width: 100%;
+    }
+
+        .dt-custom-filter .dt-search-pill input.form-control {
+            height: 42px;
+        }
+
+.dt-head {
+    gap: .75rem;
+}
+
+    .dt-head .dt-length-wrap label {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin: 0;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .dt-head .dt-length-wrap select {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 12px;
+        background: #fff;
+    }
+
+    .dt-head .dt-search-wrap {
+        display: flex;
+        justify-content: flex-end;
+        flex: 1 0 auto;
+    }
+
+.dt-search-pill {
+    position: relative;
+    width: 420px;
+    max-width: 100%;
+}
+
+    .dt-search-pill i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #517CB9;
+        font-size: 14px;
+        pointer-events: none;
+    }
+
+    .dt-search-pill input.form-control {
+        height: 42px;
+        border-radius: 999px;
+        padding-left: 2.3rem;
+        border: 1px solid var(--border);
+        background: #EEF3FF;
+        color: #1B2A4E;
+    }
+
+/* Length custom (HTML) para alinear con el buscador */
+.dt-length-custom .form-select {
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    padding: 8px 28px 8px 12px;
+}
+
+.dt-custom-filter {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+    .dt-custom-filter .dt-search-pill {
+        width: 420px;
+        max-width: 100%;
+    }
+
+        .dt-custom-filter .dt-search-pill input.form-control {
+            height: 42px;
+        }
+
+@media (max-width: 768px) {
+    .dt-custom-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+        .dt-custom-filter .dt-search-pill {
+            width: 100%;
+        }
+}
+
+@media (max-width: 1024px) {
+    .dt-head .dt-length-wrap,
+    .dt-head .dt-search-wrap {
+        flex: 1 0 100%;
+    }
+
+    .dt-search-pill {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .dataTables_wrapper .dataTables_filter input {
+        width: 160px;
+    }
+
+    .dt-search-pill {
+        width: 100%;
+    }
+}
+
+.modal .modal-content {
+    max-height: 70vh;
+    overflow: hidden;
+}
+
+.modal .modal-body {
+    max-height: calc(70vh - 120px);
+    overflow-y: auto;
+}
+
+@media (min-width: 992px) {
+    .modal-lg,
+    .modal-xl {
+        max-width: 960px;
+    }
+}
+
+.modal .modal-header {
+    background-color: #5F769E;
+    color: #fff;
+}
+
+.modal .bg-primary,
+.modal .list-group-item.active,
+.modal .badge-primary,
+.modal .btn-primary,
+.modal .nav-pills .nav-link.active,
+.modal .page-item.active .page-link {
+    background-color: #85A6D5 !important;
+    border-color: #85A6D5 !important;
+    color: #fff !important;
+}
+
+.modal .text-primary {
+    color: #5F769E !important;
+}
+
+.modal .form-control:focus {
+    border-color: #85A6D5;
+    box-shadow: 0 0 0 0.2rem rgba(133,166,213,.25);
+}
+
+.modal .text-muted {
+    color: #fff !important;
+}
+
+.modal a.text-muted:hover {
+    color: rgba(255,255,255,.9) !important;
+}
+
+:root {
+  --zebra-odd:  #f6effa; 
+  --zebra-even: #fbf7ff; 
+  --zebra-hover:#ede2f6; 
+}
+
+table.agents-table.table-contacts tbody tr:nth-of-type(odd)  > td,
+table.agents-table.table-contacts tbody tr:nth-of-type(odd)  > th {
+  background-color: var(--zebra-odd) !important;
+}
+
+table.agents-table.table-contacts tbody tr:nth-of-type(even) > td,
+table.agents-table.table-contacts tbody tr:nth-of-type(even) > th {
+  background-color: var(--zebra-even) !important;
+}
+
+/* Hover en toda la fila */
+table.agents-table.table-contacts tbody tr:hover > td,
+table.agents-table.table-contacts tbody tr:hover > th {
+  background-color: var(--zebra-hover) !important;
+}
+
+/* Línea divisoria con tinte violeta */
+table.agents-table.table-contacts tbody td {
+  border-bottom-color: #eadcf4 !important;
+}

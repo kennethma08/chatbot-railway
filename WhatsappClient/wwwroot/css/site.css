@@ -1,0 +1,222 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+/* Bootstrap focus por defecto */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+    max-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* =========================================
+   Tema global morado (Bootstrap 5 overrides)
+   ========================================= */
+:root {
+    --violet-900: #310353;
+    --violet-700: #7C3BB8;
+    --violet-600: #A860E0;
+    --violet-500: #B57EDC;
+    --violet-300: #CDABE6;
+    /* Bootstrap CSS variables */
+    --bs-primary: var(--violet-600);
+    --bs-primary-rgb: 168, 96, 224;
+    --bs-link-color: var(--violet-600);
+    --bs-link-hover-color: var(--violet-700);
+    --bs-border-color: #ece6f6;
+}
+
+/* Links */
+a {
+    color: var(--violet-600);
+}
+
+    a:hover, a:focus {
+        color: var(--violet-700);
+    }
+
+/* Botones primarios */
+.btn-primary {
+    background-color: var(--violet-600);
+    border-color: var(--violet-600);
+}
+
+    .btn-primary:hover, .btn-primary:focus {
+        background-color: var(--violet-500);
+        border-color: var(--violet-500);
+        box-shadow: 0 0 0 .2rem rgba(168,96,224,.25);
+    }
+
+/* Variantes de navegación/selección */
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    background-color: var(--violet-600);
+    border-color: var(--violet-600);
+    color: #fff;
+}
+
+/* Inputs y selects al foco en morado (quita halo celeste) */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--violet-600);
+    box-shadow: 0 0 0 .2rem rgba(168,96,224,.25);
+    outline: 0;
+}
+
+/* Badges base en morado (cuando se use .bg-primary) */
+.badge.bg-primary {
+    background-color: var(--violet-600) !important;
+}
+
+/* List-group activo en morado suave (afecta vistas con listas) */
+.list-group-item.active {
+    background-color: #EADCF4;
+    border-color: var(--violet-500);
+    color: #2b2b2b;
+}
+
+/* Bordes y radios suaves globales en cards y tablas */
+.card {
+    border-radius: 16px;
+}
+
+.table, .list-group-item {
+    border-color: var(--bs-border-color);
+}
+
+/* KPI locales */
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    border: 0;
+    border-radius: var(--card-radius);
+}
+
+    .kpi-card .card-body {
+        position: relative;
+        z-index: 2;
+    }
+
+    .kpi-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background-size: 300% 100%;
+        animation: shift 12s ease-in-out infinite;
+        filter: saturate(1.15) contrast(1.05);
+        opacity: .98;
+    }
+
+.kpi-1::before {
+    background-image: linear-gradient(120deg, var(--violet-900), var(--violet-600), var(--violet-900));
+}
+
+.kpi-2::before {
+    background-image: linear-gradient(120deg, var(--violet-600), var(--violet-500), var(--violet-600));
+}
+
+.kpi-3::before {
+    background-image: linear-gradient(120deg, var(--violet-500), var(--violet-300), var(--violet-500));
+}
+
+@keyframes shift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.kpi-label {
+    color: rgba(255,255,255,.85);
+    font-size: .9rem;
+}
+
+.kpi-value {
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+#sidebar .logo img {
+    display: block;
+    max-height: 100px;
+    width: auto;
+    margin: 0 auto 12px;
+}
+
+#sidebar ul.components {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    padding-left: 0;
+    margin: 0;
+}
+
+    #sidebar ul.components > li {
+        margin: 0;
+    }
+
+#sidebar .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 1rem;
+    border-radius: 12px;
+    transition: background-color .12s ease, transform .06s ease;
+    white-space: nowrap;
+}
+
+    #sidebar .sidebar-link:hover {
+        background-color: rgba(255,255,255,0.03);
+    }
+
+    #sidebar .sidebar-link.active,
+    #sidebar .sidebar-link.active:focus {
+        background-color: rgba(168,96,224,0.12);
+        border-radius: 12px;
+        box-shadow: none;
+    }
+
+    #sidebar .sidebar-link i,
+    #sidebar .sidebar-link .bi {
+        min-width: 1.35rem;
+        text-align: center;
+        font-size: 1.05rem;
+    }
+
+@media (max-width: 576px) {
+    #sidebar .sidebar-link {
+        padding: .5rem .75rem;
+        gap: .6rem;
+    }
+}

@@ -1,0 +1,221 @@
+﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+a { color: #0077cc; }
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.border-top { border-top: 1px solid #e5e5e5; }
+.border-bottom { border-bottom: 1px solid #e5e5e5; }
+
+.box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+
+button.accept-policy { font-size: 1rem; line-height: inherit; }
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+}
+
+/* Ajuste logo */
+.logo img {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin-bottom: 8px !important;
+}
+
+/* --- Botón logout (se mantiene) --- */
+#sidebar { position: relative; }
+.logout-area {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    pointer-events: none;
+    z-index: 3;
+}
+.logout-btn {
+    pointer-events: auto;
+    width: 56px; height: 56px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(255,255,255,.7);
+    color: #fff; background: transparent; transition: all .2s ease;
+}
+.logout-btn:hover { background: rgba(255,255,255,.15); border-color: #fff; color: #fff; }
+.logout-btn i { font-size: 1.5rem; }
+@media (max-width: 576px) {
+    .logout-area { bottom: 16px; }
+    .logout-btn { width: 52px; height: 52px; }
+}
+
+/* === Colores del sidebar === */
+:root {
+    --sb-bg: #7f4ca5; 
+    --sb-link: #fff; 
+    --sb-icon: #f3e9ff; 
+    --sb-pill-bg: #b57edc; 
+    --sb-pill-text: #ffffff; 
+    --sb-accent: #ffffff; 
+}
+
+
+nav#sidebar {
+    background: #7f4ca5 !important;
+    background-image: none !important;
+}
+
+/* Si algún contenedor interno trae fondo, lo anulamos */
+nav#sidebar .p-4,
+nav#sidebar .p-4 > *:not(ul):not(.logout-area) {
+    background: transparent !important;
+}
+
+nav#sidebar .components > li > a.sidebar-link {
+    color: #fff !important;
+    position: relative; /* <-- añadido */
+}
+#sidebar .components a.sidebar-link i { color: #f3e9ff !important; }
+
+/* Resaltado hover/activo + barrita (mismo tono) */
+nav#sidebar .components > li > a.sidebar-link:hover,
+nav#sidebar .components > li > a.sidebar-link.active,
+nav#sidebar .components > li > a.sidebar-link[aria-current="page"],
+nav#sidebar .components > li.active > a.sidebar-link {
+    background: #b57edc !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+}
+
+/* Marcador izquierdo solo en activo (contenido dentro del enlace) */
+nav#sidebar .components > li > a.sidebar-link.active::before,
+nav#sidebar .components > li > a.sidebar-link[aria-current="page"]::before,
+nav#sidebar .components > li.active > a.sidebar-link::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: #fff !important;
+    pointer-events: none; 
+}
+
+/* Anula bordes/divisores del tema */
+nav#sidebar .components > li,
+nav#sidebar .components > li > a { border: 0 !important; }
+
+/* Sidebar: mismo color en hover y activo */
+#sidebar .components a.sidebar-link {
+    display: block;
+    padding: .6rem .9rem;
+    border-radius: .6rem;
+    color: #eaf2ff;
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+/* Color único para hover/activo */
+#sidebar .components a.sidebar-link:hover,
+#sidebar .components a.sidebar-link.active {
+    background-color: rgba(13,110,253,.22) !important;
+    color: #ffffff !important;
+}
+
+/* Indicador lateral opcional al estar activo */
+#sidebar .components a.sidebar-link.active::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 4px; border-radius: 0 4px 4px 0;
+    background: #0d6efd;
+}
+
+:root {
+    --sb-bg: #1b042d;
+    --sb-link: #ffffff;
+    --sb-icon: #f3e9ff;
+    --sb-pill-bg: rgba(27, 4, 45, .28);
+    --sb-pill-text: #ffffff;
+    --sb-accent: #ffffff;
+}
+
+/* Fondo del contenedor del sidebar */
+nav#sidebar {
+    background: #1b042d !important;
+    background-image: none !important;
+}
+
+    nav#sidebar .components > li > a.sidebar-link:hover,
+    nav#sidebar .components > li > a.sidebar-link.active,
+    nav#sidebar .components > li > a.sidebar-link[aria-current="page"],
+    nav#sidebar .components > li.active > a.sidebar-link {
+        background: rgba(27, 4, 45, .28) !important;
+        color: #fff !important;
+        border-radius: 10px !important;
+    }
+
+        nav#sidebar .components > li > a.sidebar-link.active::before,
+        nav#sidebar .components > li > a.sidebar-link[aria-current="page"]::before,
+        nav#sidebar .components > li.active > a.sidebar-link::before {
+            background: #ffffff !important;
+        }
+
+#sidebar .components a.sidebar-link:hover,
+#sidebar .components a.sidebar-link.active {
+    background-color: rgba(27, 4, 45, .28) !important;
+    color: #ffffff !important;
+}
+
+    #sidebar .components a.sidebar-link.active::before {
+        background: #ffffff !important;
+    }
+
+:root {
+    --sb-pill-bg: #b57edc;
+}
+
+nav#sidebar .components > li > a.sidebar-link:hover,
+nav#sidebar .components > li > a.sidebar-link.active,
+nav#sidebar .components > li > a.sidebar-link[aria-current="page"],
+nav#sidebar .components > li.active > a.sidebar-link,
+#sidebar .components a.sidebar-link:hover,
+#sidebar .components a.sidebar-link.active {
+    background: #b57edc !important;
+    color: #fff !important;
+}
+
+#sidebar .custom-menu .btn.btn-primary {
+    background: #b57edc !important;
+    border-color: #b57edc !important;
+    color: #fff;
+}
+
+    #sidebar .custom-menu .btn.btn-primary:hover,
+    #sidebar .custom-menu .btn.btn-primary:focus {
+        background: #a86cd4 !important; 
+        border-color: #a86cd4 !important;
+    }

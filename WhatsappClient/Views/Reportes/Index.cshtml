@@ -1,0 +1,124 @@
+﻿@{
+    ViewData["Title"] = "Analíticas";
+    var from = (string)ViewBag.From;
+    var to = (string)ViewBag.To;
+}
+<div class="container-fluid py-4">
+
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 w-100">
+                <div class="input-group" style="max-width: 380px;">
+                    <span class="input-group-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3" viewBox="0 0 16 16">
+                            <path d="M14 3h-1V1h-1v2H4V1H3v2H2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM1 6v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6H1z" />
+                        </svg>
+                    </span>
+                    <input id="dateRange" type="text" class="form-control" readonly
+                           value="@from a @to" placeholder="Selecciona rango" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card kpi-card kpi-1 h-100">
+                <div class="card-body">
+                    <div class="kpi-label mb-1">Total de mensajes</div>
+                    <div id="kpiMensajes" class="display-6 kpi-value">—</div>
+                    <div id="kpiMensajesRange" class="text-white-50 small"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card kpi-card kpi-1 h-100">
+                <div class="card-body">
+                    <div class="kpi-label mb-1">Conversaciones cerradas (agente)</div>
+                    <div id="kpiCierres" class="display-6 kpi-value">—</div>
+                    <div id="kpiCierresRange" class="text-white-50 small"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card kpi-card kpi-1 h-100">
+                <div class="card-body">
+                    <div class="kpi-label mb-1">Clientes nuevos</div>
+                    <div id="kpiClientesNuevos" class="display-6 kpi-value">—</div>
+                    <div id="kpiClientesRange" class="text-white-50 small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2">Mensajes por fecha</h3>
+                    <div class="chart-wrap"><canvas id="lineMensajes"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="h6 mb-2">Cierres por agente</h3>
+                    <div class="chart-wrap"><canvas id="barCierresAgente"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card">
+        <div class="card-body">
+            <h3 class="h6 mb-2">Top clientes por mensajes</h3>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th>Cliente</th><th class="text-end">Mensajes</th></tr>
+                    </thead>
+                    <tbody id="tablaClientes"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Config al JS -->
+<script>
+    window.REPORTS_CFG = {
+      from: '@from',
+      to: '@to',
+      urls: {
+        kpis: '@Url.Action("Kpis", "Reportes")',
+        series: '@Url.Action("Series", "Reportes")',
+        closures: '@Url.Action("AgentClosures", "Reportes")',
+        topclients: '@Url.Action("TopClients", "Reportes")'
+      }
+    };
+</script>
+
+@section Styles {
+    <!-- CSS del picker (usa estilos Bootstrap) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="/assets/css/Reports.css" />
+}
+
+@section Scripts {
+    <!-- jQuery + moment + locale ES (requisitos de daterangepicker) -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/es.js"></script>
+
+    <!-- Date Range Picker -->
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    <!-- Chart.js y tu lógica -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="/assets/js/Reports.js"></script>
+}
