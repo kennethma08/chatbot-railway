@@ -1,4 +1,4 @@
-﻿﻿@using System.Text.Json
+@using System.Text.Json
 @using WhatsappClient.Models
 @model List<UsuarioDto>
 
@@ -17,7 +17,6 @@
 <div class="container-fluid px-3 px-md-4 py-3">
     <div class="d-flex align-items-center justify-content-between mb-2">
         <h2 class="mb-0 fw-bold">Agentes</h2>
-        <div class="text-muted small">Actualizado: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
     </div>
 
     <div class="row g-3 mb-2">
@@ -25,7 +24,7 @@
             <div class="card kpi-card kpi-1 h-100 shadow-sm">
                 <div class="card-body d-flex align-items-center justify-content-between">
                     <div>
-                        <h6 class="text-white-50 mb-1">Conversaciones abiertas</h6>
+                        <h6 class="text-white mb-1">Conversaciones abiertas</h6>
                         <h3 class="mb-0 fw-bold text-white">@kOpen</h3>
                     </div>
                     <i class="bx bx-message-rounded-dots kpi-icon text-white-50"></i>
