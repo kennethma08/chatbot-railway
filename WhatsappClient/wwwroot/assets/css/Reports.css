@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --violet-900: #310353;
     --violet-600: #A860E0;
     --violet-500: #B57EDC;
@@ -126,4 +126,9 @@
 thead.table-light {
     --bs-table-bg: #f8f5fe;
     --bs-table-color: #3e2464;
+}
+
+.daterangepicker .ranges li.active{
+    background-color: #A860E0;
+    color: white;
 }
