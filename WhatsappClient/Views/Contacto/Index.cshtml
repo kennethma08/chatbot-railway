@@ -88,7 +88,6 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/contacto.css" asp-append-version="true" />
-    <!-- Iconos (lápiz) -->
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 
     <style>
@@ -119,6 +118,23 @@
         .btn-view {
             background: #fff;
         }
+
+        /* Botón Guardar morado y redondeado */
+        .btn-save {
+            background: #7f4ca5;
+            border-color: #7f4ca5;
+            color: #fff;
+            border-radius: 12px;
+        }
+
+            .btn-save:hover {
+                background: #6f3a99;
+                border-color: #6f3a99;
+            }
+
+            .btn-save:disabled {
+                opacity: .7;
+            }
 
         /* Inline edit */
         .icon-btn {
@@ -157,7 +173,6 @@
             margin: .75rem 0 1rem 0;
         }
 
-        /* Última conversación en offcanvas */
         #oc-conv-msg {
             max-height: 42vh;
             overflow: auto;
@@ -182,12 +197,12 @@
         }
 
             .bubble.agent {
-                background: #d1ecf1;
+                background: #b57edc;
                 margin-left: auto;
             }
 
             .bubble.contact {
-                background: #f1f1f1;
+                background: #cdabe6;
                 margin-right: auto;
             }
 
@@ -210,6 +225,33 @@
             .msg-row.contact {
                 align-items: flex-start;
             }
+
+        .modal-themed .modal-header .modal-content {
+            position: relative;
+            border-radius: 16px;
+        }
+
+        .modal-themed .modal-header .btn-close {
+            position: absolute;
+            right: .75rem;
+            top: .75rem;
+            filter: invert(1) grayscale(100%);
+            opacity: .85;
+        }
+
+            .modal-themed .modal-header .btn-close:hover {
+                opacity: 1;
+            }
+
+        #convList {
+            max-height: 45vh;
+            overflow: auto;
+        }
+
+        .btn-view {
+            background: #a860e0;
+            color: white;
+        }
     </style>
 }
 
@@ -220,6 +262,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
     </div>
     <div class="offcanvas-body">
+
+        <!-- Antiforgery: token para POST (solo para este offcanvas) -->
+        <form id="oc-antiforgery">@Html.AntiForgeryToken()</form>
+
         <!-- Cabecera con edición inline -->
         <div class="d-flex align-items-center gap-3 mb-3">
             <div id="oc-avatar" class="avatar">C</div>
@@ -228,7 +274,7 @@
                 <button type="button" id="oc-btnEditName" class="icon-btn" title="Editar nombre" aria-label="Editar nombre">
                     <i class="bx bx-pencil"></i>
                 </button>
-                <button type="button" id="oc-btnSaveName" class="btn btn-primary btn-sm" style="display:none;">
+                <button type="button" id="oc-btnSaveName" class="btn btn-save btn-sm" style="display:none;">
                     Guardar
                 </button>
             </div>
@@ -263,15 +309,16 @@
     </div>
 </div>
 
-<!-- Modal Historial (completo, sin cambios) -->
+<!-- Modal Historial -->
 <div class="modal fade" id="convModal" tabindex="-1" aria-labelledby="convModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content modal-themed">
             <div class="modal-header">
                 <h5 class="modal-title w-100 text-center">
                     Conversaciones — <span id="convModalContactName"></span>
                     <small class="text-white" id="convModalContactPhone"></small>
                 </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
                 <div class="row" style="min-height:50vh;">
@@ -284,9 +331,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer justify-content-center">
-                <button class="btn btn-secondary text-center" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+            <div class="modal-footer justify-content-center"></div>
         </div>
     </div>
 </div>
@@ -309,7 +354,7 @@
                     ordering: true,
                     responsive: false,
                     columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
-                    order: [[3, 'desc']]
+                    order: [[2, 'desc']]
                 });
 
                 // Sincroniza select de longitud
@@ -393,32 +438,50 @@
                     isEditingContact = false;
                 }
 
+                // Guard de doble envío a nivel ventana para toda la vista
+                window.__savingName = false;
+
                 async function saveContactName(){
+                    if (window.__savingName) return;
+                    window.__savingName = true;
+
                     const id = currentContactId;
                     const nombre = ($('#oc-name').text() || '').trim();
-                    if (!id || id <= 0){ alert('Id inválido'); return; }
-                    if (!nombre){ alert('Ingrese un nombre'); return; }
+                    if (!id || id <= 0){ alert('Id inválido'); window.__savingName = false; return; }
+                    if (!nombre){ alert('Ingrese un nombre'); window.__savingName = false; return; }
 
                     try{
                         $('#oc-btnSaveName').prop('disabled', true);
+
+                        const tokenEl = document.querySelector('#oc-antiforgery input[name="__RequestVerificationToken"]');
+                        const token = tokenEl ? tokenEl.value : '';
+
                         const url = '@Url.Action("ActualizarNombre", "Contacto")';
                         const res = await fetch(url, {
                             method:'POST',
-                            headers:{ 'Content-Type':'application/json', 'X-Requested-With':'XMLHttpRequest' },
-                            body: JSON.stringify({ id, nombre })
+                            credentials: 'same-origin',
+                            headers:{
+                                'Accept': 'application/json, text/plain, */*',
+                                'Content-Type':'application/json',
+                                'X-Requested-With':'XMLHttpRequest',
+                                ...(token ? { 'RequestVerificationToken': token } : {})
+                            },
+                            // IMPORTANT: respeta el casing del record del controlador
+                            body: JSON.stringify({ Id: id, Nombre: nombre })
                         });
+
                         if (!res.ok){
                             const msg = await res.text();
                             alert(`No se pudo guardar (${res.status}). ${msg}`);
                             $('#oc-btnSaveName').prop('disabled', false);
+                            window.__savingName = false;
                             return;
                         }
 
-                        // Actualizar fila en la tabla
+                        // Actualiza la tabla y el botón
                         const cell = document.getElementById(`cname-${id}`);
                         if (cell) cell.textContent = nombre;
 
-                        // Actualizar data-name en botones de la fila
                         const $row = $(`#contactosTable button.btn-view[data-id="${id}"]`).closest('tr');
                         $row.find('.btn-view').each(function(){ $(this).attr('data-name', nombre); });
 
@@ -426,6 +489,8 @@
                     }catch(err){
                         alert(`Error: ${err?.message ?? err}`);
                         $('#oc-btnSaveName').prop('disabled', false);
+                    } finally {
+                        window.__savingName = false;
                     }
                 }
 
@@ -499,6 +564,7 @@
                     // Poblar offcanvas (datos)
                     $('#oc-name').text(currentContactName).removeAttr('contenteditable').off('.contact');
                     $('#oc-avatar').text((currentContactName || 'C').trim().substring(0,1).toUpperCase());
+                    // Registrar handlers SOLO aquí (evita dobles)
                     $('#oc-btnEditName').show().off('click').on('click', enterEditContact);
                     $('#oc-btnSaveName').hide().off('click').on('click', saveContactName);
 
@@ -517,6 +583,21 @@
                     // Mostrar
                     getOffcanvas().show();
                 });
+
+                $('#contactosTable tbody').on('dblclick', 'tr', function () {
+                    const $btn = $(this).find('.btn-view').first();
+                    if ($btn.length) $btn.trigger('click');
+                });
+
+                let contactosLastTapTs = 0;
+                $('#contactosTable tbody').on('touchend', 'tr', function () {
+                    const now = Date.now();
+                    if (now - contactosLastTapTs > 0 && now - contactosLastTapTs < 350) {
+                        const $btn = $(this).find('.btn-view').first();
+                        if ($btn.length) $btn.trigger('click');
+                    }
+                    contactosLastTapTs = now;
+                }, { passive: true });
 
                 // ====== Historial Completo (modal existente) ======
                 var convModal = new bootstrap.Modal(document.getElementById('convModal'));
@@ -598,7 +679,7 @@
                         var $wrap = $('<div class="mb-3"></div>').addClass(isAgent ? 'text-end' : 'text-start');
                         $wrap.html(`
                             <div class="small text-muted">${fmtDateTimeCR(m.sentAt)}</div>
-                            <div class="p-2" style="background:${isAgent ? '#d1ecf1' : '#f1f1f1'}; border-radius:10px; display:inline-block; max-width:75%;">
+                            <div class="p-2" style="background:${isAgent ? '#b57edc' : '#cdabe6'}; border-radius:10px; display:inline-block; max-width:75%;">
                                 <div class="fw-semibold mb-1">${isAgent ? 'Tú' : 'Contacto'}</div>
                                 ${esc(m.message || '')}
                             </div>
@@ -608,9 +689,7 @@
                     $convMessages.scrollTop($convMessages.prop('scrollHeight'));
                 }
 
-                // Handlers
-                $('#oc-btnEditName').on('click', enterEditContact);
-                $('#oc-btnSaveName').on('click', saveContactName);
+                // (NO enlazar handlers globales extra aquí para evitar dobles)
             });
         })(jQuery);
     </script>

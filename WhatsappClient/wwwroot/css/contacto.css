@@ -25,9 +25,9 @@
 
 /* === Zebra morado para Contactos === */
 :root {
-  --zebra-odd:  #f6effa; /* morado muy claro */
-  --zebra-even: #fbf7ff; /* aún más claro */
-  --zebra-hover:#ede2f6; /* hover */
+    --zebra-odd: #f6effa; /* morado muy claro */
+    --zebra-even: #fbf7ff; /* aún más claro */
+    --zebra-hover: #ede2f6; /* hover */
 }
 
 /* Avatar circular con degradé suave */
@@ -109,17 +109,22 @@
     }
 
 /* Filas alternadas */
-table.agents-table.table-contacts tbody tr:nth-child(odd)  { background-color: var(--zebra-odd); }
-table.agents-table.table-contacts tbody tr:nth-child(even) { background-color: var(--zebra-even); }
+table.agents-table.table-contacts tbody tr:nth-child(odd) {
+    background-color: var(--zebra-odd);
+}
+
+table.agents-table.table-contacts tbody tr:nth-child(even) {
+    background-color: var(--zebra-even);
+}
 
 /* Hover consistente en morado (sobre-escribe el hover azul previo) */
 table.agents-table.table-contacts tbody tr:hover {
-  background-color: var(--zebra-hover) !important;
+    background-color: var(--zebra-hover) !important;
 }
 
 /* Línea divisoria con leve tinte violeta para integrar el look */
 table.agents-table.table-contacts tbody td {
-  border-bottom-color: #eadcf4;
+    border-bottom-color: #eadcf4;
 }
 
 /* ===== DataTables integrado en la card ===== */
@@ -164,7 +169,7 @@ table.agents-table.table-contacts tbody td {
     background: #fff;
 }
 
-/* Search */
+/* Search (filtro nativo; en esta vista no se muestra, pero se mantiene por compatibilidad) */
 .dataTables_wrapper .dataTables_filter label {
     display: flex;
     align-items: center;
@@ -208,6 +213,19 @@ table.agents-table.table-contacts tbody td {
             background: var(--primary) !important;
             border-color: var(--primary) !important;
             color: #fff !important;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+            .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+                background: #A860E0 !important;
+                border-color: #A860E0 !important;
+                color: #fff !important;
+            }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:focus,
+        .dataTables_wrapper .dataTables_paginate .paginate_button:active {
+            box-shadow: 0 0 0 .15rem rgba(168, 96, 224, .25) !important;
+            outline: none !important;
         }
 
 .table-contacts {
@@ -259,6 +277,7 @@ table.agents-table.table-contacts tbody td {
         border-top-right-radius: 0;
     }
 
+/* ====== Filtro personalizado (pill) ====== */
 .dt-custom-filter {
     display: flex;
     align-items: flex-end;
@@ -303,7 +322,7 @@ table.agents-table.table-contacts tbody td {
         align-items: center;
         gap: .5rem;
         margin: 0;
-        color: var(--muted);
+        color: white;
         font-weight: 600;
     }
 
@@ -331,7 +350,7 @@ table.agents-table.table-contacts tbody td {
         left: 12px;
         top: 50%;
         transform: translateY(-50%);
-        color: #517CB9;
+        color: #A860E0;
         font-size: 14px;
         pointer-events: none;
     }
@@ -341,9 +360,36 @@ table.agents-table.table-contacts tbody td {
         border-radius: 999px;
         padding-left: 2.3rem;
         border: 1px solid var(--border);
-        background: #EEF3FF;
-        color: #1B2A4E;
+        background: #fff;
+        color: black;
+        caret-color: black;
     }
+
+        /* Placeholder blanco (compatibilidad) */
+        .dt-search-pill input.form-control::placeholder {
+            color: black;
+            opacity: 1;
+        }
+
+        .dt-search-pill input.form-control::-webkit-input-placeholder {
+            color: black;
+            opacity: 1;
+        }
+
+        .dt-search-pill input.form-control::-moz-placeholder {
+            color: black;
+            opacity: 1;
+        }
+
+        .dt-search-pill input.form-control:-ms-input-placeholder {
+            color: black;
+            opacity: 1;
+        }
+
+        .dt-search-pill input.form-control::-ms-input-placeholder {
+            color: black;
+            opacity: 1;
+        }
 
 /* Length custom (HTML) para alinear con el buscador */
 .dt-length-custom .form-select {
@@ -354,22 +400,32 @@ table.agents-table.table-contacts tbody td {
     padding: 8px 28px 8px 12px;
 }
 
-.dt-custom-filter {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: .75rem;
+/* Selector de cantidad en lila (#A860E0) */
+.dt-length-custom .form-select,
+.dataTables_wrapper .dataTables_length select {
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-    .dt-custom-filter .dt-search-pill {
-        width: 420px;
-        max-width: 100%;
+    /* Hover y focus */
+    .dt-length-custom .form-select:hover,
+    .dataTables_wrapper .dataTables_length select:hover {
+        border-color: #A860E0 !important;
     }
 
-        .dt-custom-filter .dt-search-pill input.form-control {
-            height: 42px;
-        }
+    .dt-length-custom .form-select:focus,
+    .dt-length-custom .form-select:focus-visible,
+    .dataTables_wrapper .dataTables_length select:focus,
+    .dataTables_wrapper .dataTables_length select:focus-visible {
+        border-color: #A860E0 !important;
+        box-shadow: 0 0 0 .25rem rgba(168,96,224,.25) !important;
+        outline: none !important;
+    }
+
+    /* Estado activo */
+    .dt-length-custom .form-select:active,
+    .dataTables_wrapper .dataTables_length select:active {
+        border-color: #A860E0 !important;
+    }
 
 @media (max-width: 768px) {
     .dt-custom-filter {
@@ -383,8 +439,7 @@ table.agents-table.table-contacts tbody td {
 }
 
 @media (max-width: 1024px) {
-    .dt-head .dt-length-wrap,
-    .dt-head .dt-search-wrap {
+    .dt-head .dt-length-wrap, .dt-head .dt-search-wrap {
         flex: 1 0 100%;
     }
 
@@ -408,14 +463,9 @@ table.agents-table.table-contacts tbody td {
     overflow: hidden;
 }
 
-.modal .modal-body {
-    max-height: calc(70vh - 120px);
-    overflow-y: auto;
-}
 
 @media (min-width: 992px) {
-    .modal-lg,
-    .modal-xl {
+    .modal-lg, .modal-xl {
         max-width: 960px;
     }
 }
@@ -446,7 +496,7 @@ table.agents-table.table-contacts tbody td {
 }
 
 .modal .text-muted {
-    color: #fff !important;
+    color: #000000 !important;
 }
 
 .modal a.text-muted:hover {
@@ -454,28 +504,141 @@ table.agents-table.table-contacts tbody td {
 }
 
 :root {
-  --zebra-odd:  #f6effa; 
-  --zebra-even: #fbf7ff; 
-  --zebra-hover:#ede2f6; 
+    --zebra-odd: #fbf7ff;
+    --zebra-even: #fff;
+    --zebra-hover: #ede2f6;
 }
 
-table.agents-table.table-contacts tbody tr:nth-of-type(odd)  > td,
-table.agents-table.table-contacts tbody tr:nth-of-type(odd)  > th {
-  background-color: var(--zebra-odd) !important;
+table.agents-table.table-contacts tbody tr:nth-of-type(odd) > td,
+table.agents-table.table-contacts tbody tr:nth-of-type(odd) > th {
+    background-color: var(--zebra-odd) !important;
 }
 
 table.agents-table.table-contacts tbody tr:nth-of-type(even) > td,
 table.agents-table.table-contacts tbody tr:nth-of-type(even) > th {
-  background-color: var(--zebra-even) !important;
+    background-color: var(--zebra-even) !important;
 }
 
 /* Hover en toda la fila */
 table.agents-table.table-contacts tbody tr:hover > td,
 table.agents-table.table-contacts tbody tr:hover > th {
-  background-color: var(--zebra-hover) !important;
+    background-color: var(--zebra-hover) !important;
 }
 
 /* Línea divisoria con tinte violeta */
 table.agents-table.table-contacts tbody td {
-  border-bottom-color: #eadcf4 !important;
+    border-bottom-color: #eadcf4 !important;
 }
+
+.pagination .page-item.active .page-link,
+.page-item.active .page-link {
+    background-color: #b57edc !important;
+    border-color: #b57edc !important;
+    color: #fff !important;
+}
+
+/* Placeholder blanco en el buscador de Contactos */
+#contactosSearch {
+    color: black;
+    caret-color: black;
+}
+
+    #contactosSearch::placeholder {
+        color: black;
+        opacity: 1;
+    }
+
+    #contactosSearch::-webkit-input-placeholder {
+        color: black;
+        opacity: 1;
+    }
+
+    #contactosSearch::-moz-placeholder {
+        color: black;
+        opacity: 1;
+    }
+
+    #contactosSearch:-ms-input-placeholder {
+        color: black;
+        opacity: 1;
+    }
+
+    #contactosSearch::-ms-input-placeholder {
+        color: black;
+        opacity: 1;
+    }
+
+:root {
+    --purple-100: #efe2fa;
+    --purple-200: #d6b9ee;
+    --purple-300: #b57edc;
+    --purple-400: #9e65bf;
+    --purple-500: #7f4ca5;
+    --purple-600: #6b358f;
+    --purple-700: #3b214f;
+    --purple-800: #2a0a44;
+    --purple-900: #1b042d;
+}
+
+.modal .modal-content.modal-themed .modal-header,
+.modal-themed .modal-header {
+    background-color: var(--purple-500) !important;
+    color: #fff !important;
+    border-bottom: none;
+}
+
+.modal .btn-close.btn-close-white {
+    filter: invert(1) grayscale(100%);
+    opacity: .9;
+}
+
+    .modal .btn-close.btn-close-white:hover {
+        opacity: 1;
+    }
+
+.modal .list-group {
+    --bs-list-group-active-bg: var(--purple-300);
+    --bs-list-group-active-border-color: var(--purple-300);
+    --bs-list-group-active-color: #fff;
+}
+
+.modal .list-group-item.active,
+.modal .list-group-item.active:hover,
+.modal .list-group-item.active:focus,
+.modal .list-group-item-action.active,
+.modal .list-group-item-action.active:hover,
+.modal .list-group-item-action.active:focus {
+    background-color: var(--purple-300) !important;
+    border-color: var(--purple-300) !important;
+    color: black !important;
+}
+
+.modal .bg-primary,
+.modal .badge-primary,
+.modal .btn-primary,
+.modal .nav-pills .nav-link.active,
+.modal .page-item.active .page-link {
+    background-color: var(--purple-300) !important;
+    border-color: var(--purple-300) !important;
+    color: black !important;
+}
+
+.modal .text-primary {
+    color: var(--purple-500) !important;
+}
+
+.modal .form-control:focus {
+    border-color: var(--purple-300) !important;
+    box-shadow: 0 0 0 0.2rem rgba(181,126,220,.25) !important;
+}
+
+.offcanvas-themed .btn-primary {
+    background-color: #7f4ca5 !important;
+    border-color: #7f4ca5 !important;
+    border-radius: 12px !important;
+}
+
+    .offcanvas-themed .btn-primary:hover {
+        background-color: #6f3a99 !important;
+        border-color: #6f3a99 !important;
+    }

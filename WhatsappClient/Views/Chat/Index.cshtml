@@ -8,19 +8,17 @@
             height: 100%;
             overflow: hidden;
         }
-        /* Paleta morada local */
+
         :root {
             --violet-900: #310353;
             --violet-700: #7C3BB8;
             --violet-600: #A860E0;
             --violet-500: #B57EDC;
             --violet-300: #CDABE6;
-            /* Lista de conversaciones (zebra morado) */
             --list-odd: #F6EFFF;
             --list-even: #FFFFFF;
             --list-hover: #EDE2F6;
             --list-active: #EADCF4;
-            /* Conversación cerrada */
             --closed-bg: #F0ECF7;
             --closed-bg-hov: #E9E3F4;
             --closed-border: #CBB6E9;
@@ -28,9 +26,7 @@
             --closed-muted: #7b6f8d;
         }
 
-        /* Fondo directo en el contenedor de mensajes */
         #messages.chat-messages {
-            /* background-image: url('/assets/images/fondochats.png');*/
             background-repeat: repeat;
             background-position: center;
             background-size: 380px auto;
@@ -44,7 +40,6 @@
             border-radius: 999px !important;
         }
 
-        /* Botón Enviar morado con máxima prioridad */
         #send-btn.btn.btn-primary {
             border-radius: 999px !important;
             padding-inline: 18px;
@@ -65,13 +60,11 @@
                 background-color: #EADCF4 !important;
                 border-color: #EADCF4 !important;
                 color: #6b5a84 !important;
-                opacity: 1 !important; /* evita grisáceo de Bootstrap */
+                opacity: 1 !important;
                 cursor: not-allowed;
             }
 
-        /* Filtro (select) redondeado junto al buscador */
-        #statusFilter,
-        #statusFilterMob {
+        #statusFilter, #statusFilterMob {
             border-radius: 999px !important;
             padding-left: .9rem;
             padding-right: 2.25rem;
@@ -97,7 +90,6 @@
             padding-right: 2.25rem;
         }
 
-        /* Zebra lista conversaciones */
         #users, #users-mob {
             padding: 6px 6px 8px;
         }
@@ -107,7 +99,7 @@
                 margin: 6px 6px;
                 padding: 10px 12px 10px 14px;
                 border: 1px solid transparent;
-                transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease;
+                transition: background-color .15s,box-shadow .15s,border-color .15s;
             }
 
                 #users .list-group-item:nth-child(odd), #users-mob .list-group-item:nth-child(odd) {
@@ -156,7 +148,6 @@
                         border-left-color: var(--closed-border2);
                     }
 
-        /* SOLO estilo visual; el responsive y el layout son de Bootstrap */
         .chat-messages {
             position: relative;
         }
@@ -165,7 +156,6 @@
                 content: "";
                 position: absolute;
                 inset: 0;
-                /*background-image: url('/assets/images/fondochats.png');*/
                 background-repeat: repeat;
                 background-position: center;
                 background-size: 380px auto;
@@ -179,7 +169,6 @@
                 z-index: 1;
             }
 
-        /* Burbujas */
         .msg {
             display: flex;
             margin-bottom: 12px;
@@ -246,9 +235,15 @@
             font-size: .75rem;
         }
 
-        /* Helpers del encabezado responsive */
+        .name-pill {
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .min-w-0 {
-            min-width: 0
+            min-width: 0;
         }
 
         .text-truncate-1 {
@@ -266,9 +261,8 @@
             white-space: nowrap;
         }
 
-        /* Offcanvas responsive (ocupa bajo el header) */
         .offcanvas.custom-chat {
-            top: 80px; /* tu header */
+            top: 80px;
             height: calc(100dvh - 80px);
         }
 
@@ -282,18 +276,55 @@
             height: 100%;
             overflow: auto;
         }
+
+        @@media (max-width:991.98px) {
+            .offcanvas.custom-chat {
+                top: 0 !important;
+                height: 100dvh !important;
+            }
+        }
+
+        .icon-btn {
+            border: 0;
+            background: transparent;
+            padding: 4px 6px;
+            border-radius: 8px;
+            line-height: 1;
+        }
+
+            .icon-btn:hover {
+                background: rgba(0,0,0,.06);
+            }
+
+        .btn-save {
+            background: var(--violet-600);
+            border-color: var(--violet-600);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+            .btn-save:hover {
+                background: var(--violet-500);
+                border-color: var(--violet-500);
+            }
+
+            .btn-save:disabled {
+                opacity: .7;
+            }
+
+        #chat-contact-name[contenteditable="true"] {
+            outline: 2px dashed #e3e3f5;
+            border-radius: 6px;
+            padding: 2px 4px;
+        }
     </style>
 }
 
 <div class="container-fluid p-0 vh-100 d-flex flex-column">
-
     <div class="card rounded-0 border-0 flex-grow-1 d-flex overflow-hidden">
-
         <div class="row g-0 flex-grow-1 h-100 overflow-hidden">
 
-            <!-- Col izquierda: OCULTA en < lg; visible en desktop -->
             <div class="col-12 col-lg-4 col-xl-3 border-end d-none d-lg-flex flex-column h-100 overflow-hidden">
-                <!-- Filtros (desktop) -->
                 <div class="p-3">
                     <div class="row g-2">
                         <div class="col-8">
@@ -308,43 +339,31 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="users" class="list-group list-group-flush flex-grow-1 overflow-auto"></div>
             </div>
 
-            <!-- Col derecha: SIEMPRE visible; alto fijo descontando el header -->
-            <div class="col-12 col-lg-8 col-xl-9 d-flex flex-column overflow-hidden"
-                 style="min-height:0; height:calc(100vh - 80px); height:calc(100dvh - 80px);">
-
-                <!-- Header chat (responsive) -->
+            <div class="col-12 col-lg-8 col-xl-9 d-flex flex-column overflow-hidden" style="min-height:0;height:calc(100vh - 80px);height:calc(100dvh - 80px);">
                 <div class="py-2 px-3 border-bottom" id="chat-header">
                     <div class="d-flex align-items-center flex-wrap gap-2">
-                        <!-- Botón Offcanvas SOLO en < lg (compacto) -->
-                        <button class="btn btn-outline-secondary btn-sm d-lg-none btn-offcanvas order-0"
-                                type="button" data-bs-toggle="offcanvas" data-bs-target="#convOffcanvas" aria-controls="convOffcanvas">
-                            <i class="bi bi-chat-left-text d-inline d-sm-none"></i>
-                            <span class="d-none d-sm-inline">Conversaciones</span>
+                        <button class="btn btn-outline-secondary btn-sm d-lg-none btn-offcanvas order-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#convOffcanvas" aria-controls="convOffcanvas">
+                            <i class="bi bi-chat-left-text d-inline d-sm-none"></i><span class="d-none d-sm-inline">Conversaciones</span>
                         </button>
 
-                        <!-- Avatar compacto -->
-                        <img id="chat-avatar"
-                             src="https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg"
-                             class="rounded-circle order-1" width="36" height="36" alt="avatar" />
+                        <img id="chat-avatar" src="https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg" class="rounded-circle order-1" width="36" height="36" alt="avatar" />
 
-                        <!-- Títulos y badges: trunca y hace wrap limpio -->
                         <div class="flex-grow-1 min-w-0 order-2">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <span id="chat-contact-name" class="fw-bold text-truncate-1">Selecciona una conversación</span>
+                                <button type="button" id="chat-btnEditName" class="icon-btn" aria-label="Editar nombre"><i class="bx bx-pencil"></i></button>
+                                <button type="button" id="chat-btnSaveName" class="btn btn-save btn-sm" style="display:none;">Guardar</button>
+
                                 <span id="statusBadge" class="badge"></span>
                                 <span id="convNumber" class="badge conv-pill" style="display:none;"></span>
                             </div>
                             <div id="chat-contact-sub" class="small text-muted d-none d-sm-block"></div>
                         </div>
 
-                        <!-- Acción a la derecha; baja a segunda línea si no cabe -->
-                        <button class="btn btn-sm btn-outline-secondary ms-auto order-3" id="toggleStatusBtn" disabled>
-                            Cerrar
-                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ms-auto order-3" id="toggleStatusBtn" disabled>Cerrar</button>
                     </div>
                 </div>
 
@@ -362,7 +381,8 @@
     </div>
 </div>
 
-<!-- Offcanvas (móvil & tablet) -->
+<form id="chat-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+
 <div class="offcanvas offcanvas-start custom-chat" tabindex="-1" id="convOffcanvas" aria-labelledby="convOffcanvasLabel" data-bs-backdrop="true">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="convOffcanvasLabel">Conversaciones</h5>
@@ -371,9 +391,7 @@
     <div class="offcanvas-body">
         <div class="p-3 border-bottom">
             <div class="row g-2">
-                <div class="col-8">
-                    <input id="searchBoxMob" type="text" class="form-control" placeholder="Filtrar conversaciones..." />
-                </div>
+                <div class="col-8"><input id="searchBoxMob" type="text" class="form-control" placeholder="Filtrar conversaciones..." /></div>
                 <div class="col-4">
                     <select id="statusFilterMob" class="form-select">
                         <option value="all" selected>All</option>
@@ -389,8 +407,8 @@
 
 @section Scripts {
     <script>
-        const usersEl      = document.getElementById('users');         // desktop
-        const usersMobEl   = document.getElementById('users-mob');     // móvil/tablet (offcanvas)
+        const usersEl      = document.getElementById('users');
+        const usersMobEl   = document.getElementById('users-mob');
         const messagesEl   = document.getElementById('messages');
 
         const searchBox    = document.getElementById('searchBox');
@@ -403,13 +421,23 @@
         const toggleBtn = document.getElementById('toggleStatusBtn');
         const sendBtn   = document.getElementById('send-btn');
         const inputEl   = document.getElementById('message-input');
-        const convNumberEl = document.getElementById('convNumber');
+
+        const chatNameEl      = document.getElementById('chat-contact-name');
+        const chatBtnEdit     = document.getElementById('chat-btnEditName');
+        const chatBtnSave     = document.getElementById('chat-btnSaveName');
+        const headerNamePill  = document.getElementById('headerContactName');
+        const convNumberEl    = document.getElementById('convNumber');
+
+        const NAME_MAX = 20;
 
         let conversations = [];
         let selectedConversation = null;
         let messages = [];
 
-        /* utilidades de fecha */
+        const contactNamesById = Object.create(null);
+        let isEditingHeaderName = false;
+        let currentHeaderName = '';
+
         const CR_TZ = 'America/Costa_Rica';
         function asDateUTC(ts){ if(ts==null) return new Date(NaN); if(typeof ts==='number') return new Date(ts); const s=String(ts); if(/Z|[+-]\d{2}:\d{2}$/.test(s)) return new Date(s); return new Date(s+'Z'); }
         const fmtDateTimeCR=new Intl.DateTimeFormat('es-CR',{timeZone:CR_TZ,dateStyle:'short',timeStyle:'short'});
@@ -418,7 +446,16 @@
         const fmtTime=(ts)=>{const d=asDateUTC(ts);return isNaN(d)?'':fmtTimeCR.format(d);};
         const toMillisUTC=(ts)=>{const d=asDateUTC(ts);return isNaN(d)?0:d.getTime();};
         const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const normalizeSender=(s)=>{ const v=(s||'contact').toLowerCase(); return (v==='agent'||v==='user'||v==='me'||v==='admin')?'me':'contact'; };
+        function normalizeSender(s){ const v=(s||'contact').toLowerCase(); return (v==='agent'||v==='user'||v==='me'||v==='admin')?'me':'contact'; }
+
+        function getDisplayNameForConv(c){
+          const local = (c && c.contactId ? contactNamesById[c.contactId] : '') || '';
+          const fromConv = (c && c.contactName) || '';
+          const base = (local || fromConv).trim();
+          if (base) return base;
+          if (c && c.contactPhone) return c.contactPhone;
+          return c && c.contactId ? `Contacto ${c.contactId}` : 'Contacto';
+        }
 
         function applyStatusUI(status){
           const s=(status||'open').toLowerCase();
@@ -432,7 +469,6 @@
         }
 
         function updateActiveConvLink(){
-          // limpia ambos listados
           if (usersEl) usersEl.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
           if (usersMobEl) usersMobEl.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
           if(!selectedConversation) return;
@@ -443,7 +479,6 @@
           if(el2) el2.classList.add('active');
         }
 
-        // Estado de filtros compartido
         function getFilterStatus(){
           const st = (statusFilter?.value || 'all');
           const q  = (searchBox?.value || '').trim().toLowerCase();
@@ -461,15 +496,16 @@
         function conversationsHTML(arr){
           return arr.map(c=>{
             const isClosed = (String(c.status||'open').toLowerCase() !== 'open');
+            const name = esc(getDisplayNameForConv(c));
+            const when = c.lastActivityAt ? fmt(c.lastActivityAt) : (c.startedAt ? fmt(c.startedAt) : '');
+            const phone = esc(c.contactPhone||'');
             return `
               <a href="#" class="list-group-item list-group-item-action d-flex align-items-start${isClosed?' closed':''}" data-conv-id="${c.id}">
                 <img src="https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg" class="rounded-circle me-2" width="40" height="40" alt="">
-                <div class="flex-grow-1">
-                  <div class="fw-bold">#${c.id} <small class="text-muted">(${esc(c.status||'open')})</small></div>
-        <div class="small text-muted">
-          ${ c.lastActivityAt ? fmt(c.lastActivityAt) : (c.startedAt ? fmt(c.startedAt) : '') }
-        </div>
-                          <div class="small">${esc(c.contactPhone||'')}</div>
+                <div class="flex-grow-1 min-w-0">
+                  <div class="fw-bold text-truncate-1">${name}</div>
+                  <div class="small text-muted">${when}</div>
+                  <div class="small">${phone}</div>
                 </div>
               </a>`;
           }).join('');
@@ -477,14 +513,15 @@
 
         function renderConversations(list){
           const { st, q } = getFilterStatus();
-          const src = (list||[]).filter(c =>
-            (st==='all' ? true : ((c.status||'open').toLowerCase()===st)) &&
-            (
-              String(c.id).includes(q) ||
-              (c.contactPhone && c.contactPhone.toLowerCase().includes(q)) ||
-              (c.status && c.status.toLowerCase().includes(q))
-            )
-          );
+          const src = (list||[]).filter(c =>{
+            const name = getDisplayNameForConv(c).toLowerCase();
+            const okStatus = (st==='all' ? true : ((c.status||'open').toLowerCase()===st));
+            const okText = String(c.id).includes(q)
+                        || name.includes(q)
+                        || (c.contactPhone && c.contactPhone.toLowerCase().includes(q))
+                        || (c.status && c.status.toLowerCase().includes(q));
+            return okStatus && okText;
+          });
 
           if (!src.length){
             if (usersEl) usersEl.innerHTML   = '<div class="p-3 text-muted">No hay conversaciones.</div>';
@@ -499,26 +536,25 @@
           updateActiveConvLink();
         }
 
+        function setHeaderNameFromConv(conv){
+          const display = getDisplayNameForConv(conv);
+          currentHeaderName = display;
+          chatNameEl.textContent = display;
+          if (headerNamePill){
+            headerNamePill.textContent = display;
+            headerNamePill.style.display = display ? '' : 'none';
+          }
+        }
+
         function selectConversation(conv){
           selectedConversation=conv;
-
-          document.getElementById('chat-contact-name').textContent = conv.contactPhone || ('Contacto '+(conv.contactId||''));
+          setHeaderNameFromConv(conv);
           document.getElementById('chat-contact-sub').textContent  = `Conversación #${conv.id}`;
-
-          if (convNumberEl){
-            if (conv?.id != null){
-              convNumberEl.textContent = `#${conv.id}`;
-              convNumberEl.style.display = '';
-            } else {
-              convNumberEl.style.display = 'none';
-            }
-          }
-
+          if (convNumberEl){ convNumberEl.style.display='none'; }
           applyStatusUI(conv.status);
           updateActiveConvLink();
           loadMessages(conv.id);
 
-          // Si venía de móvil, cierra el offcanvas
           try{
             const el = document.getElementById('convOffcanvas');
             if (window.bootstrap && el){
@@ -526,9 +562,13 @@
               if (oc) oc.hide();
             }
           }catch(_){}
+
+          exitEditHeaderName(false);
         }
+
         function selectConversationById(id){
-          const c=conversations.find(x=>String(x.id)===String(id)); if(c){ selectConversation(c); }
+          const c=conversations.find(x=>String(x.id)===String(id));
+          if(c){ selectConversation(c); }
         }
 
         async function loadAllConversations(){
@@ -577,25 +617,12 @@
           }
           messages.forEach(m=>{
             const who=normalizeSender(m.sender);
-            const wrap=document.createElement('div');
-            wrap.className='msg '+(who==='me'?'me':'contact');
-
-            const bubble=document.createElement('div');
-            bubble.className='bubble';
-
-            if(m.type && m.type!=='text'){
-              bubble.innerHTML = `<strong>[${esc(m.type)}]</strong> ${esc(m.message||'')}`;
-            }else{
-              bubble.textContent = m.message || '';
-            }
-
-            const time=document.createElement('span');
-            time.textContent=fmtTime(m.sentAt);
-            time.className=(who==='me'?'time':'time-dark');
-
-            if(who==='me'){ bubble.appendChild(time); wrap.appendChild(bubble); }
-            else{ wrap.appendChild(bubble); bubble.appendChild(time); }
-
+            const wrap=document.createElement('div'); wrap.className='msg '+(who==='me'?'me':'contact');
+            const bubble=document.createElement('div'); bubble.className='bubble';
+            if(m.type && m.type!=='text'){ bubble.innerHTML = `<strong>[${esc(m.type)}]</strong> ${esc(m.message||'')}`; }
+            else{ bubble.textContent = m.message || ''; }
+            const time=document.createElement('span'); time.textContent=fmtTime(m.sentAt); time.className=(who==='me'?'time':'time-dark');
+            if(who==='me'){ bubble.appendChild(time); wrap.appendChild(bubble); } else{ wrap.appendChild(bubble); bubble.appendChild(time); }
             messagesEl.appendChild(wrap);
           });
           messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -611,27 +638,16 @@
           renderMessages();
           inputEl.value='';
 
-          const payload={
-            conversationId:selectedConversation.id,
-            contactId:selectedConversation.contactId||null,
-            contactPhone:selectedConversation.contactPhone||null,
-            message:txt
-          };
+          const payload={ conversationId:selectedConversation.id, contactId:selectedConversation.contactId||null, contactPhone:selectedConversation.contactPhone||null, message:txt };
 
           try{
-            const res=await fetch('/Chat/SendMessage',{
-              method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
-            });
+            const res=await fetch('/Chat/SendMessage',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
             const data=await res.json();
-            if(!data || data.success===false){
-              alert(data?.error || 'No se pudo enviar el mensaje.');
-            }else{
+            if(!data || data.success===false){ alert(data?.error || 'No se pudo enviar el mensaje.'); }
+            else{
               const newId=data.conversationId;
-              if(newId && newId!==selectedConversation.id){
-                await loadAllConversations(); selectConversationById(newId);
-              }else{
-                setTimeout(()=>loadMessages(selectedConversation.id),350);
-              }
+              if(newId && newId!==selectedConversation.id){ await loadAllConversations(); selectConversationById(newId); }
+              else{ setTimeout(()=>loadMessages(selectedConversation.id),350); }
             }
           }catch(e){ console.error(e); alert('Error al enviar.'); }
         }
@@ -642,17 +658,10 @@
           if(current!=='open') return;
           const next='closed';
 
-          const payload={
-            conversationId:selectedConversation.id,
-            status:next,
-            contactId:selectedConversation.contactId||null,
-            startedAt:selectedConversation.startedAt||null
-          };
+          const payload={ conversationId:selectedConversation.id, status:next, contactId:selectedConversation.contactId||null, startedAt:selectedConversation.startedAt||null };
 
           try{
-            const res=await fetch('/Chat/UpdateConversationStatus',{
-              method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
-            });
+            const res=await fetch('/Chat/UpdateConversationStatus',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
             const data=await res.json();
             if(data && data.success){
               selectedConversation.status=next;
@@ -660,39 +669,91 @@
               if(idx>=0) conversations[idx].status=next;
               applyStatusUI(next);
               renderConversations(conversations);
-            }else{
-              alert(data?.error || 'No se pudo actualizar el estado.');
-            }
+            }else{ alert(data?.error || 'No se pudo actualizar el estado.'); }
           }catch(e){ console.error(e); alert('Error al cambiar estado.'); }
         }
 
-        // Delegación de clicks en ambas listas (desktop + offcanvas)
-        function onListClick(container, e){
-          const link = e.target.closest('.list-group-item[data-conv-id]');
+        function placeCaretEndEl(el){
+          try{ const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }catch{}
+        }
+        function validateHeaderNameAndToggle(){
+          const v=(chatNameEl.textContent||'').trim();
+          const trimmed = v.slice(0, NAME_MAX);
+          if (trimmed !== chatNameEl.textContent) { chatNameEl.textContent = trimmed; placeCaretEndEl(chatNameEl); }
+          chatBtnSave.disabled = (trimmed.length===0 || trimmed===currentHeaderName);
+        }
+        function enterEditHeaderName(){
+          if(!selectedConversation || isEditingHeaderName) return;
+          isEditingHeaderName=true;
+          chatNameEl.setAttribute('contenteditable','true');
+          chatNameEl.focus(); placeCaretEndEl(chatNameEl);
+          chatBtnEdit.style.display='none'; chatBtnSave.style.display='inline-flex'; chatBtnSave.disabled=true;
+          chatNameEl.oninput = validateHeaderNameAndToggle;
+          chatNameEl.onkeydown = (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); saveHeaderContactName(); } if(ev.key==='Escape'){ ev.preventDefault(); exitEditHeaderName(false); } };
+        }
+        function exitEditHeaderName(saved){
+          if(!isEditingHeaderName) return;
+          chatNameEl.removeAttribute('contenteditable'); chatNameEl.oninput = chatNameEl.onkeydown = null;
+          if(!saved){ chatNameEl.textContent = currentHeaderName; } else { currentHeaderName = (chatNameEl.textContent||'').trim(); }
+          chatBtnSave.style.display='none'; chatBtnEdit.style.display='inline-flex'; isEditingHeaderName=false;
+        }
+        async function saveHeaderContactName(){
+          if(!selectedConversation) return;
+          const id = selectedConversation.contactId || 0;
+          let nombre = (chatNameEl.textContent||'').trim();
+          if(id<=0){ alert('Id inválido.'); return; }
+          if(!nombre){ alert('Ingrese un nombre.'); return; }
+          if(nombre.length>NAME_MAX){ nombre = nombre.slice(0, NAME_MAX); chatNameEl.textContent = nombre; }
+
+          try{
+            chatBtnSave.disabled = true;
+
+            const res = await fetch('@Url.Action("ActualizarNombre", "Contacto")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ id, nombre })
+            });
+
+            if(!res.ok){
+              const msg = await res.text();
+              alert(`No se pudo guardar (${res.status}). ${msg || 'No se pudo actualizar el nombre.'}`);
+              chatBtnSave.disabled = false; return;
+            }
+
+            contactNamesById[id] = nombre;
+            chatNameEl.textContent = nombre;
+            if (headerNamePill){ headerNamePill.textContent = nombre; headerNamePill.style.display=''; }
+            exitEditHeaderName(true);
+            renderConversations(conversations);
+          }catch(err){
+            alert(`Error: ${err?.message ?? err}`);
+            chatBtnSave.disabled = false;
+          }
+        }
+
+        document.getElementById('chat-btnEditName')?.addEventListener('click', enterEditHeaderName);
+        document.getElementById('chat-btnSaveName')?.addEventListener('click', saveHeaderContactName);
+
+        function onListClick(e){
+          const t = e.target;
+          if (!t) return;
+          const link = t.closest('.list-group-item[data-conv-id]');
           if(!link) return;
           e.preventDefault();
-          const id = link.dataset.convId;
-          selectConversationById(id);
+          selectConversationById(link.dataset.convId);
         }
-        if (usersEl) usersEl.addEventListener('click', onListClick.bind(null, usersEl));
-        if (usersMobEl) usersMobEl.addEventListener('click', onListClick.bind(null, usersMobEl));
+        usersEl?.addEventListener('click', onListClick);
+        usersMobEl?.addEventListener('click', onListClick);
 
-        // Filtros desktop
-        if(statusFilter) statusFilter.addEventListener('change', ()=>{ syncMobFromDesktop(); renderConversations(conversations); });
-        if(searchBox){
-          searchBox.addEventListener('input', ()=>{ syncMobFromDesktop(); renderConversations(conversations); });
-        }
-        // Filtros mobile (sincronizan hacia desktop)
-        if(statusFilterMob) statusFilterMob.addEventListener('change', ()=>{ setFiltersFromMob(); renderConversations(conversations); });
-        if(searchBoxMob){
-          searchBoxMob.addEventListener('input', ()=>{ setFiltersFromMob(); renderConversations(conversations); });
-        }
+        statusFilter?.addEventListener('change', ()=>{ if (searchBox && searchBoxMob) searchBoxMob.value = searchBox.value; if (statusFilter && statusFilterMob) statusFilterMob.value = statusFilter.value; renderConversations(conversations); });
+        searchBox?.addEventListener('input', ()=>{ if (searchBox && searchBoxMob) searchBoxMob.value = searchBox.value; if (statusFilter && statusFilterMob) statusFilterMob.value = statusFilter.value; renderConversations(conversations); });
+        statusFilterMob?.addEventListener('change', ()=>{ if (searchBox && searchBoxMob) searchBox.value = searchBoxMob.value; if (statusFilter && statusFilterMob) statusFilter.value = statusFilterMob.value; renderConversations(conversations); });
+        searchBoxMob?.addEventListener('input', ()=>{ if (searchBox && searchBoxMob) searchBox.value = searchBoxMob.value; if (statusFilter && statusFilterMob) statusFilter.value = statusFilterMob.value; renderConversations(conversations); });
 
         document.getElementById('send-btn').addEventListener('click', sendMessage);
         document.getElementById('message-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
         document.getElementById('toggleStatusBtn').addEventListener('click', toggleStatus);
 
-        // Carga inicial
         loadAllConversations();
     </script>
 }

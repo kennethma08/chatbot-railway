@@ -10,11 +10,10 @@ using Microsoft.AspNetCore.Http;
 
 namespace WhatsappClient.Controllers
 {
-    // DTO para cambio de estado
     public class UpdateConversationStatusDto
     {
         public int ConversationId { get; set; }
-        public string Status { get; set; } = "open"; // "open" | "closed"
+        public string Status { get; set; } = "open";
         public int? ContactId { get; set; }
         public DateTime? StartedAt { get; set; }
     }
@@ -39,9 +38,6 @@ namespace WhatsappClient.Controllers
         [Route("", Name = "ChatRoot")]
         public IActionResult Index() => View();
 
-        // =========================
-        // CONVERSACIONES por teléfono
-        // =========================
         [HttpGet]
         public async Task<IActionResult> GetContactConversations(string phone)
         {
@@ -54,13 +50,9 @@ namespace WhatsappClient.Controllers
                 if (!ok) return Ok(new { conversations = Array.Empty<object>(), error = reason });
 
                 var phoneDigits = SoloDigitos(phone);
-                Console.WriteLine($"[Chat/GetContactConversations] phone IN='{phone}' digits='{phoneDigits}'");
 
-                // 1) Obtener contactos
                 var resContact = await http.GetAsync("api/general/contacto");
                 var contactsRaw = await resContact.Content.ReadAsStringAsync();
-                Console.WriteLine($"[Chat] contactos status={(int)resContact.StatusCode} len={contactsRaw.Length}");
-
                 if (!resContact.IsSuccessStatusCode)
                     return Ok(new { conversations = Array.Empty<object>(), error = "No se pudo obtener contactos" });
 
@@ -69,24 +61,18 @@ namespace WhatsappClient.Controllers
                     .Select(e => new
                     {
                         Id = GetIntFlex(e, "id", "Id") ?? 0,
-                        PhoneDigits = SoloDigitos(GetStringFlex(e, "phone_number", "phoneNumber", "PhoneNumber"))
+                        Name = GetStringFlex(e, "name", "Name", "nombre", "Nombre", "full_name", "FullName"),
+                        Phone = GetStringFlex(e, "phone_number", "phoneNumber", "PhoneNumber")
                     })
+                    .Select(x => new { x.Id, x.Name, x.Phone, PhoneDigits = SoloDigitos(x.Phone) })
                     .ToList();
 
                 var contact = contactos.FirstOrDefault(c => c.PhoneDigits == phoneDigits);
-
-                Console.WriteLine(contact is null
-                    ? $"[Chat] contacto NO encontrado para {phoneDigits}"
-                    : $"[Chat] contacto encontrado id={contact.Id}");
-
                 if (contact == null || contact.Id <= 0)
                     return Ok(new { conversations = Array.Empty<object>() });
 
-                // 2) Filtrar conversaciones por ContactId **Y** que tengan AgentRequestedAt
                 var resConv = await http.GetAsync("api/general/conversacion");
                 var convRaw = await resConv.Content.ReadAsStringAsync();
-                Console.WriteLine($"[Chat] conversaciones status={(int)resConv.StatusCode} len={convRaw.Length}");
-
                 if (!resConv.IsSuccessStatusCode)
                     return Ok(new { conversations = Array.Empty<object>(), error = "No se pudo obtener conversaciones" });
 
@@ -96,32 +82,28 @@ namespace WhatsappClient.Controllers
                     .Select(e => new
                     {
                         id = GetIntFlex(e, "id", "Id") ?? 0,
-                        contactId = GetIntFlex(e, "contact_id", "ContactId") ?? 0,
+                        contactId = contact.Id,
+                        contactName = contact.Name,
+                        contactPhone = contact.Phone,
                         status = GetStringFlex(e, "status", "Status") ?? "open",
                         startedAt = GetDateFlex(e, "started_at", "StartedAt"),
                         lastActivityAt = GetDateFlex(e, "last_activity_at", "LastActivityAt"),
                         totalMessages = GetIntFlex(e, "total_messages", "TotalMessages") ?? 0,
                         greetingSent = GetBoolFlex(e, "greeting_sent", "Greeting_Sent", "GreetingSent") ?? false,
-                        agentRequestedAt = GetDateFlex(e, "agent_requested_at", "AgentRequestedAt") // << NUEVO
+                        agentRequestedAt = GetDateFlex(e, "agent_requested_at", "AgentRequestedAt")
                     })
-                    .Where(x => x.agentRequestedAt != null) // << NUEVO: solo si ya pidió agente
+                    .Where(x => x.agentRequestedAt != null)
                     .OrderByDescending(x => x.lastActivityAt ?? x.startedAt)
                     .ToList();
-
-                Console.WriteLine($"[Chat] convs para contactId={contact.Id} (con agente): {convs.Count}");
 
                 return Ok(new { conversations = convs });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Chat/GetContactConversations][ERR] {ex}");
                 return Ok(new { conversations = Array.Empty<object>(), error = ex.Message });
             }
         }
 
-        // =========================
-        // MENSAJES por conversación
-        // =========================
         [HttpGet]
         public async Task<IActionResult> GetConversationMessages(int conversationId)
         {
@@ -135,8 +117,6 @@ namespace WhatsappClient.Controllers
 
                 var resMsg = await http.GetAsync("api/general/mensaje");
                 var msgRaw = await resMsg.Content.ReadAsStringAsync();
-                Console.WriteLine($"[Chat] mensajes status={(int)resMsg.StatusCode} len={msgRaw.Length}");
-
                 if (!resMsg.IsSuccessStatusCode)
                     return Ok(new { messages = Array.Empty<object>(), error = "No se pudo obtener mensajes" });
 
@@ -154,20 +134,14 @@ namespace WhatsappClient.Controllers
                     .OrderBy(x => x.sentAt)
                     .ToList();
 
-                Console.WriteLine($"[Chat] mensajes para conv {conversationId}: {msgs.Count}");
-
                 return Ok(new { messages = msgs });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Chat/GetConversationMessages][ERR] {ex}");
                 return Ok(new { messages = Array.Empty<object>(), error = ex.Message });
             }
         }
 
-        // =========================
-        // PANEL izquierdo: todas (SOLO las con AgentRequestedAt)
-        // =========================
         [HttpGet]
         public async Task<IActionResult> GetAllConversations()
         {
@@ -178,7 +152,6 @@ namespace WhatsappClient.Controllers
 
                 var resConv = await http.GetAsync("api/general/conversacion");
                 var convRaw = await resConv.Content.ReadAsStringAsync();
-
                 if (!resConv.IsSuccessStatusCode)
                     return Ok(new { conversations = Array.Empty<object>(), error = "No se pudo obtener conversaciones" });
 
@@ -193,12 +166,11 @@ namespace WhatsappClient.Controllers
                         lastActivityAt = GetDateFlex(e, "last_activity_at", "LastActivityAt"),
                         totalMessages = GetIntFlex(e, "total_messages", "TotalMessages") ?? 0,
                         greetingSent = GetBoolFlex(e, "greeting_sent", "Greeting_Sent", "GreetingSent") ?? false,
-                        agentRequestedAt = GetDateFlex(e, "agent_requested_at", "AgentRequestedAt") // << NUEVO
+                        agentRequestedAt = GetDateFlex(e, "agent_requested_at", "AgentRequestedAt")
                     })
                     .ToList();
 
-                // Mapa ContactId -> phone_number
-                var phoneByContact = new Dictionary<int, string?>();
+                var infoByContact = new Dictionary<int, (string? Name, string? Phone)>();
                 var resContact = await http.GetAsync("api/general/contacto");
                 if (resContact.IsSuccessStatusCode)
                 {
@@ -206,23 +178,30 @@ namespace WhatsappClient.Controllers
                     foreach (var c in ExtraerItems(docC.RootElement))
                     {
                         var id = GetIntFlex(c, "id", "Id") ?? 0;
+                        if (id <= 0) continue;
+                        var name = GetStringFlex(c, "name", "Name", "nombre", "Nombre", "full_name", "FullName");
                         var phone = GetStringFlex(c, "phone_number", "phoneNumber", "PhoneNumber");
-                        if (id > 0) phoneByContact[id] = phone;
+                        infoByContact[id] = (name, phone);
                     }
                 }
 
                 var convs = convsRaw
-                    .Where(x => x.agentRequestedAt != null) // << NUEVO: solo las que pidieron agente
-                    .Select(x => new
+                    .Where(x => x.agentRequestedAt != null)
+                    .Select(x =>
                     {
-                        id = x.id,
-                        contactId = x.contactId,
-                        contactPhone = phoneByContact.TryGetValue(x.contactId, out var ph) ? ph : null,
-                        status = x.status,
-                        startedAt = x.startedAt,
-                        lastActivityAt = x.lastActivityAt,
-                        totalMessages = x.totalMessages,
-                        agentRequestedAt = x.agentRequestedAt
+                        infoByContact.TryGetValue(x.contactId, out var info);
+                        return new
+                        {
+                            id = x.id,
+                            contactId = x.contactId,
+                            contactName = info.Name,
+                            contactPhone = info.Phone,
+                            status = x.status,
+                            startedAt = x.startedAt,
+                            lastActivityAt = x.lastActivityAt,
+                            totalMessages = x.totalMessages,
+                            agentRequestedAt = x.agentRequestedAt
+                        };
                     })
                     .OrderByDescending(x => x.lastActivityAt ?? x.startedAt)
                     .ToList();
@@ -235,9 +214,6 @@ namespace WhatsappClient.Controllers
             }
         }
 
-        // =========================
-        // Enviar mensaje (igual)
-        // =========================
         [HttpPost]
         public async Task<IActionResult> SendMessage([FromBody] JsonElement body)
         {
@@ -413,7 +389,6 @@ namespace WhatsappClient.Controllers
             }
         }
 
-        // ====== Helpers HTTP/Graph/API ======
         private (HttpClient http, bool ok, string reason) CreateApiClient()
         {
             var apiBase = _cfg["Api:BaseUrl"]?.TrimEnd('/');
@@ -539,7 +514,6 @@ namespace WhatsappClient.Controllers
             await http.PostAsync(relativeEndpoint, new StringContent(json, Encoding.UTF8, "application/json"));
         }
 
-        // ===== JSON utils =====
         private static IEnumerable<JsonElement> ExtraerItems(JsonElement root)
         {
             if (TryGetCaseInsensitive(root, "data", out var data))

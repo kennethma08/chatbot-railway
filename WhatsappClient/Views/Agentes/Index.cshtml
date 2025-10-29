@@ -1,4 +1,4 @@
-﻿@using System.Text.Json
+﻿﻿@using System.Text.Json
 @using WhatsappClient.Models
 @model List<UsuarioDto>
 
@@ -15,7 +15,6 @@
 }
 
 <div class="container-fluid px-3 px-md-4 py-3">
-
     <div class="d-flex align-items-center justify-content-between mb-2">
         <h2 class="mb-0 fw-bold">Agentes</h2>
         <div class="text-muted small">Actualizado: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
@@ -61,7 +60,6 @@
 
     <div class="card card-contacts shadow-sm">
         <div class="card-body p-0">
-
             <div class="dt-custom-filter px-3 pt-3 pb-2">
                 <div class="dt-length-custom d-flex align-items-center gap-2">
                     <span>Mostrar</span>
@@ -119,7 +117,7 @@
                                     </td>
                                     <td class="text-muted">@u.Correo</td>
                                     <td class="text-center">
-                                        <span class="count-pill @cls">@cierres</span>
+                                        <span class="count-pill @cls" data-agent-id="@u.Id" data-initial="@cierres">@cierres</span>
                                     </td>
                                     <td class="text-end">
                                         <button class="ghost btn-view"
@@ -140,9 +138,7 @@
 <aside id="drawer" class="drawer" aria-hidden="true">
     <div class="hd">
         <h3 id="d-title" class="mb-0">Cierres — Agente</h3>
-        <button class="close-btn" type="button" onclick="closeDrawer()" style="background:#01295F; border-radius:12px; color:#fff;">
-            Cerrar
-        </button>
+        <button class="btn btn-primary btn-sm btn-invert-7f4ca5 close-btn" type="button" onclick="closeDrawer()">Cerrar</button>
     </div>
     <div class="bd">
         <input type="hidden" id="d-user-id" />
@@ -154,12 +150,10 @@
                 <div class="flex-grow-1">
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                         <div id="d-name" class="fw-bold" aria-label="Nombre del agente"></div>
-                        <button type="button" id="btn-edit" class="icon-btn" title="Editar nombre" aria-label="Editar nombre">
+                        <button type="button" id="btn-edit" class="icon-btn" aria-label="Editar nombre">
                             <i class="bx bx-pencil"></i>
                         </button>
-                        <button type="button" id="btn-save" class="btn btn-primary btn-sm" style="display:none;">
-                            Guardar
-                        </button>
+                        <button type="button" id="btn-save" class="btn btn-primary btn-sm btn-invert-7f4ca5" style="display:none;">Guardar</button>
                     </div>
                     <div id="d-email" class="muted small mt-1">correo@empresa.com</div>
                 </div>
@@ -183,6 +177,8 @@
     </div>
 </aside>
 
+<div id="drawer-backdrop" class="drawer-backdrop" aria-hidden="true"></div>
+
 @section Styles {
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/agentes.css" asp-append-version="true" />
@@ -192,21 +188,21 @@
             background: transparent;
             padding: 4px 6px;
             border-radius: 8px;
-            line-height: 1;
+            line-height: 1
         }
 
             .icon-btn:hover {
-                background: rgba(0,0,0,.06);
+                background: rgba(0,0,0,.06)
             }
 
         #d-name[contenteditable="true"] {
             outline: 2px dashed #e3e3f5;
             border-radius: 6px;
-            padding: 2px 4px;
+            padding: 2px 4px
         }
 
         table.dataTable {
-            width: 100% !important;
+            width: 100% !important
         }
 
         .dt-custom-filter {
@@ -214,7 +210,7 @@
             gap: 12px;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
+            justify-content: space-between
         }
 
         .dt-search-pill {
@@ -223,205 +219,322 @@
             gap: .5rem;
             border: 1px solid #eef0f3;
             padding: .25rem .5rem;
-            border-radius: 999px;
+            border-radius: 999px
         }
 
             .dt-search-pill .form-control {
                 border: 0;
                 outline: 0;
                 box-shadow: none;
-                min-width: 220px;
+                min-width: 220px
             }
 
             .dt-search-pill i {
-                opacity: .6;
+                opacity: .6
             }
 
         .dt-length-custom select {
-            width: auto;
+            width: auto
         }
 
-        /* ---------- Encabezado de tabla: blanco + texto negro ---------- */
-        /* Forzar fondo blanco y texto negro incluso si hay estilos globales/tema */
-        #agentesTable thead,
-        #agentesTable thead tr,
-        #agentesTable thead th,
-        #agentesTable thead td {
+        #agentesTable thead, #agentesTable thead tr, #agentesTable thead th, #agentesTable thead td {
             background-color: #fff !important;
-            color: #000 !important;
+            color: #000 !important
         }
-            /* Borde inferior más suave en el header */
-            #agentesTable thead th,
-            #agentesTable thead td {
-                border-bottom: 1px solid #e9ecef !important;
+
+            #agentesTable thead th, #agentesTable thead td {
+                border-bottom: 1px solid #e9ecef !important
             }
-                /* Asegurar color negro en th ordenables (DataTables) */
-                #agentesTable thead th.dt-orderable-asc,
-                #agentesTable thead th.dt-orderable-desc {
-                    color: #000 !important;
+
+                #agentesTable thead th.dt-orderable-asc, #agentesTable thead th.dt-orderable-desc {
+                    color: #000 !important
                 }
 
-        /* Responsive tweaks for filters */
-        @@media (max-width: 575.98px) {
+        #agentesTable tbody tr > * {
+            background-color: #FBF7FF !important
+        }
+
+        #agentesTable tbody tr:hover > * {
+            background-color: #F1E9F9 !important
+        }
+
+        .count-pill, .count-pill.count-high, .count-pill.count-med, .count-pill.count-low {
+            display: inline-block;
+            min-width: 2.25rem;
+            padding: .25rem .5rem;
+            text-align: center;
+            border-radius: 999px;
+            font-weight: 700;
+            background-color: #CDABE6 !important;
+            color: #FFFFFF !important
+        }
+
+        .badge-mini {
+            display: inline-block;
+            padding: .2rem .5rem;
+            border-radius: .5rem;
+            font-weight: 600;
+            background-color: #CDABE6 !important;
+            color: #FFFFFF !important
+        }
+
+        .ghost.btn-view {
+            background: #A860E0;
+            border: 1px solid #A860E0;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: .5rem;
+            line-height: 1.2;
+            font-weight: 600
+        }
+
+            .ghost.btn-view:hover, .ghost.btn-view:focus {
+                background: #8F4CCF;
+                border-color: #8F4CCF;
+                color: #fff
+            }
+
+            .ghost.btn-view:active {
+                background: #7C3BB8;
+                border-color: #7C3BB8;
+                color: #fff
+            }
+
+        .drawer .hd {
+            background: #7F4CA5;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px 16px
+        }
+
+            .drawer .hd #d-title {
+                color: #FFFFFF
+            }
+
+        .btn.btn-primary.btn-invert-7f4ca5,
+        .btn.btn-primary.btn-invert-7f4ca5:hover,
+        .btn.btn-primary.btn-invert-7f4ca5:focus,
+        .btn.btn-primary.btn-invert-7f4ca5:active,
+        .btn.btn-primary.btn-invert-7f4ca5:focus-visible {
+            background-color: #FFFFFF !important;
+            border-color: #7F4CA5 !important;
+            color: #7F4CA5 !important;
+            box-shadow: none !important
+        }
+
+        .close-btn {
+            border-radius: 12px !important;
+            font-weight: 700 !important
+        }
+
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .2s ease,visibility .2s ease;
+            z-index: 1040
+        }
+
+            .drawer-backdrop.show {
+                opacity: 1;
+                visibility: visible
+            }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 420px;
+            max-width: 100%;
+            height: 100%;
+            background: #fff;
+            box-shadow: -2px 0 24px rgba(0,0,0,.18);
+            z-index: 1050;
+            transition: right .25s ease
+        }
+
+            .drawer.open {
+                right: 0
+            }
+
+        .backdrop-open {
+            overflow: hidden
+        }
+
+        @@media (max-width:575.98px) {
             .dt-custom-filter {
                 flex-direction: column;
-                align-items: stretch;
+                align-items: stretch
             }
 
             .dt-length-custom {
-                order: 2;
+                order: 2
             }
 
             .dt-search-pill {
                 order: 1;
-                width: 100%;
+                width: 100%
             }
 
                 .dt-search-pill .form-control {
                     min-width: 0;
-                    width: 100%;
+                    width: 100%
                 }
         }
 
-        /* Optional: nicer child rows from DataTables Responsive */
         table.dataTable > tbody > tr.child .dtr-details {
-            width: 100%;
+            width: 100%
         }
 
             table.dataTable > tbody > tr.child .dtr-details > li {
                 border: 0 !important;
-                padding: .25rem .25rem !important;
+                padding: .25rem .25rem !important
             }
     </style>
 }
 
 @section Scripts {
     <script>
-        const $ = s => document.querySelector(s);
-        let currentUserId = null;
-        let originalName = "";
-        let isEditing = false;
+        const $=s=>document.querySelector(s);
+        let currentUserId=null;
+        let originalName="";
+        let isEditing=false;
 
-        (function ($jq) {
-            $jq(function () {
-                try { if ($jq.fn.DataTable.isDataTable('#agentesTable')) $jq('#agentesTable').DataTable().destroy(); } catch { }
-                const pageLen = 5;
-
-                const DT = window.DataTable || $jq.fn.dataTable;
-
-                const table = $jq('#agentesTable').DataTable({
-                    dom: 't<"dt-foot d-flex flex-wrap gap-2 align-items-center justify-content-between px-3 pb-3"ip>',
-                    language: { url: 'https://cdn.datatables.net/plug-ins/2.3.4/i18n/es-ES.json' },
-                    pageLength: pageLen,
-                    lengthMenu: [5,10,25,50,100],
-                    autoWidth: false,
-                    ordering: true,
-                    responsive: {
-                        details: {
-                            type: 'inline',
-                            target: 'tr',
-                            renderer: DT.Responsive
-                                ? DT.Responsive.renderer.tableAll({ tableClass: 'table table-sm table-borderless mb-0' })
-                                : null
+        (function($jq){
+            $jq(function(){
+                try{if($jq.fn.DataTable.isDataTable('#agentesTable'))$jq('#agentesTable').DataTable().destroy();}catch{}
+                const pageLen=5;
+                const DT=window.DataTable||$jq.fn.dataTable;
+                const table=$jq('#agentesTable').DataTable({
+                    dom:'t<"dt-foot d-flex flex-wrap gap-2 align-items-center justify-content-between px-3 pb-3"ip>',
+                    language:{url:'https://cdn.datatables.net/plug-ins/2.3.4/i18n/es-ES.json'},
+                    pageLength:pageLen,
+                    lengthMenu:[5,10,25,50,100],
+                    autoWidth:false,
+                    ordering:true,
+                    responsive:{
+                        details:{
+                            type:'inline',
+                            target:'tr',
+                            renderer:DT.Responsive?DT.Responsive.renderer.tableAll({tableClass:'table table-sm table-borderless mb-0'}):null
                         }
                     },
-                    columnDefs: [
-                        { orderable: false, searchable: false, targets: -1 },
-                        { responsivePriority: 1, targets: 0 },
-                        { responsivePriority: 2, targets: -1 },
-                        { responsivePriority: 3, targets: 2 },
-                        { responsivePriority: 4, targets: 1 }
+                    columnDefs:[
+                        {orderable:false,searchable:false,targets:-1},
+                        {responsivePriority:1,targets:0},
+                        {responsivePriority:2,targets:-1},
+                        {responsivePriority:3,targets:2},
+                        {responsivePriority:4,targets:1}
                     ],
-                    order: [[3, 'desc']]
+                    order:[[3,'desc']]
                 });
 
-                const $len = $jq('#agentesLength');
+                const $len=$jq('#agentesLength');
                 $len.val(String(table.page.len()));
-                $len.on('change', function () {
-                    const v = parseInt(this.value || '5', 10);
+                $len.on('change',function(){
+                    const v=parseInt(this.value||'5',10);
                     table.page.len(v).draw(false);
                 });
 
-                const debounce = (fn, wait) => { let t; return function(){ clearTimeout(t); t=setTimeout(()=>fn.apply(this, arguments), wait); }; };
+                const debounce=(fn,wait)=>{let t;return function(){clearTimeout(t);t=setTimeout(()=>fn.apply(this,arguments),wait);};};
                 $jq('#agentesSearch')
-                    .on('input', debounce(function () { table.search(this.value || '').draw(); }, 200))
-                    .on('keydown', function (e) { if (e.key === 'Escape') { $jq(this).val(''); table.search('').draw(); } });
+                    .on('input',debounce(function(){table.search(this.value||'').draw();},200))
+                    .on('keydown',function(e){if(e.key==='Escape'){$jq(this).val('');table.search('').draw();}});
+
+                const updateVisibleCountPills=()=>{
+                    document.querySelectorAll('#agentesTable tbody .count-pill[data-agent-id]').forEach(async el=>{
+                        const id=el.getAttribute('data-agent-id');
+                        if(!id) return;
+                        try{
+                            const url='@Url.Action("ClosedByAgent", "Agentes")'+`?id=${encodeURIComponent(id)}`;
+                            const res=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+                            if(!res.ok) return;
+                            const text=await res.text();
+                            const json=text?JSON.parse(text):{items:[],total:0};
+                            const total=(Number.isFinite(json.total)?json.total:(Array.isArray(json.items)?json.items.length:0));
+                            el.textContent=total;
+                            el.classList.remove('count-low','count-med','count-high');
+                            if(total>=10) el.classList.add('count-high');
+                            else if(total>=5) el.classList.add('count-med');
+                            else el.classList.add('count-low');
+                        }catch{}
+                    });
+                };
+
+                updateVisibleCountPills();
+                $jq('#agentesTable').on('draw.dt',updateVisibleCountPills);
+
+                const backdrop=document.getElementById('drawer-backdrop');
+                if(backdrop){backdrop.addEventListener('click',closeDrawer);}
+                document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#drawer')?.classList.contains('open')){closeDrawer();}});
             });
         })(jQuery);
 
-        const fmtDate = iso => {
-            if (!iso) return "—";
-            try { const d = new Date(iso); return Number.isNaN(d.getTime()) ? iso : d.toLocaleString(); }
-            catch { return iso; }
+        const fmtDate=iso=>{
+            if(!iso)return "—";
+            try{const d=new Date(iso);return Number.isNaN(d.getTime())?iso:d.toLocaleString();}
+            catch{return iso;}
         };
 
-        function closeDrawer() {
-            const d = $('#drawer');
-            if (d) d.classList.remove('open');
+        function closeDrawer(){
+            const d=$('#drawer');
+            if(d)d.classList.remove('open');
+            const bd=$('#drawer-backdrop');
+            if(bd)bd.classList.remove('show');
+            document.body.classList.remove('backdrop-open');
             exitEditMode(false);
         }
 
-        async function openDrawer(userId, name, email) {
-            if (!$('#drawer')) return;
-
-            currentUserId = userId;
-            originalName = (name || 'Agente').trim();
-            isEditing = false;
-
-            $('#d-user-id').value = userId;
-            $('#d-title').textContent = `Cierres totales — ${originalName}`;
-            $('#d-name').textContent  = originalName;
-            $('#d-email').textContent = email || '—';
-            $('#d-avatar').textContent = originalName.substring(0,1).toUpperCase();
-
+        async function openDrawer(userId,name,email){
+            if(!$('#drawer'))return;
+            currentUserId=userId;
+            originalName=(name||'Agente').trim();
+            isEditing=false;
+            $('#d-user-id').value=userId;
+            $('#d-title').textContent=`Cierres totales — ${originalName}`;
+            $('#d-name').textContent=originalName;
+            $('#d-email').textContent=email||'—';
+            $('#d-avatar').textContent=originalName.substring(0,1).toUpperCase();
             $('#d-name').removeAttribute('contenteditable');
-            $('#btn-save').style.display = 'none';
-            $('#btn-edit').style.display = 'inline-flex';
-
-            $('#btn-edit').onclick = enterEditMode;
-            $('#btn-save').onclick = saveAgentName;
-
-            $('#d-name').oninput = () => {
-                const v = ($('#d-name').textContent || '').trim() || 'Agente';
-                $('#d-avatar').textContent = v.substring(0,1).toUpperCase();
-                $('#btn-save').disabled = (v === originalName || v.length === 0);
+            $('#btn-save').style.display='none';
+            $('#btn-edit').style.display='inline-flex';
+            $('#btn-edit').onclick=enterEditMode;
+            $('#btn-save').onclick=saveAgentName;
+            $('#d-name').oninput=()=>{
+                const v=($('#d-name').textContent||'').trim()||'Agente';
+                $('#d-avatar').textContent=v.substring(0,1).toUpperCase();
+                $('#btn-save').disabled=(v===originalName||v.length===0);
             };
-
-            $('#d-total').textContent = '—';
-            $('#d-list').innerHTML    = `<div class="muted">Cargando...</div>`;
-
+            $('#d-total').textContent='—';
+            $('#d-list').innerHTML=`<div class="muted">Cargando...</div>`;
             $('#drawer').classList.add('open');
+            const bd=$('#drawer-backdrop');
+            if(bd)bd.classList.add('show');
+            document.body.classList.add('backdrop-open');
 
-            const url = '@Url.Action("ClosedByAgent", "Agentes")' + `?id=${encodeURIComponent(userId)}`;
-
-            try {
-                const res  = await fetch(url, { headers: { 'X-Requested-With':'XMLHttpRequest' }});
-                if (!res.ok) {
-                    $('#d-list').innerHTML = `<div class="muted">HTTP ${res.status}</div>`;
-                    return;
-                }
-
-                const text = await res.text();
-                const json = text ? JSON.parse(text) : { items: [], total: 0 };
-
-                const items = Array.isArray(json.items) ? json.items : [];
-                const total = Number.isFinite(json.total) ? json.total : items.length;
-
-                $('#d-total').textContent = total;
-
-                if (items.length === 0) {
-                    $('#d-list').innerHTML = `<div class="muted">Sin cierres registrados para este agente.</div>`;
-                    return;
-                }
-
-                const frag = document.createDocumentFragment();
-                items.forEach(it => {
-                    const row = document.createElement('div');
-                    row.className = 'conv';
-                    row.innerHTML = `
+            const url='@Url.Action("ClosedByAgent", "Agentes")'+`?id=${encodeURIComponent(userId)}`;
+            try{
+                const res=await fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+                if(!res.ok){$('#d-list').innerHTML=`<div class="muted">HTTP ${res.status}</div>`;return;}
+                const text=await res.text();
+                const json=text?JSON.parse(text):{items:[],total:0};
+                const items=Array.isArray(json.items)?json.items:[];
+                const total=Number.isFinite(json.total)?json.total:items.length;
+                $('#d-total').textContent=total;
+                if(items.length===0){$('#d-list').innerHTML=`<div class="muted">Sin cierres registrados para este agente.</div>`;return;}
+                const frag=document.createDocumentFragment();
+                items.forEach(it=>{
+                    const row=document.createElement('div');
+                    row.className='conv';
+                    row.innerHTML=`
                         <div>
                             <div class="fw-bold">#${it.id}</div>
-                            <div class="muted small">Contacto: ${it.contactPhone ?? '—'}</div>
+                            <div class="muted small">Contacto: ${it.contactPhone??'—'}</div>
                         </div>
                         <div class="text-end">
                             <div class="badge-mini">Inicio: ${fmtDate(it.startedAt)}</div>
@@ -430,123 +543,103 @@
                     `;
                     frag.appendChild(row);
                 });
-                $('#d-list').innerHTML = '';
+                $('#d-list').innerHTML='';
                 $('#d-list').appendChild(frag);
-
-            } catch (err) {
-                $('#d-list').innerHTML = `<div class="muted">Error al cargar: ${err?.message ?? err}</div>`;
+            }catch(err){
+                $('#d-list').innerHTML=`<div class="muted">Error al cargar: ${err?.message??err}</div>`;
             }
         }
 
         function placeCaretEnd(el){
-            const r = document.createRange();
+            const r=document.createRange();
             r.selectNodeContents(el);
             r.collapse(false);
-            const sel = window.getSelection();
+            const sel=window.getSelection();
             sel.removeAllRanges();
             sel.addRange(r);
         }
 
-        function enterEditMode() {
-            if (isEditing) return;
-            isEditing = true;
-
-            const nameEl = $('#d-name');
-            nameEl.setAttribute('contenteditable', 'true');
+        function enterEditMode(){
+            if(isEditing)return;
+            isEditing=true;
+            const nameEl=$('#d-name');
+            nameEl.setAttribute('contenteditable','true');
             nameEl.focus();
             placeCaretEnd(nameEl);
-
-            $('#btn-edit').style.display = 'none';
-            $('#btn-save').style.display = 'inline-flex';
-            $('#btn-save').disabled = true;
-
-            nameEl.onkeydown = (ev) => {
-                if (ev.key === 'Enter') { ev.preventDefault(); saveAgentName(); }
-                if (ev.key === 'Escape') { ev.preventDefault(); exitEditMode(false); }
+            $('#btn-edit').style.display='none';
+            $('#btn-save').style.display='inline-flex';
+            $('#btn-save').disabled=true;
+            nameEl.onkeydown=(ev)=>{
+                if(ev.key==='Enter'){ev.preventDefault();saveAgentName();}
+                if(ev.key==='Escape'){ev.preventDefault();exitEditMode(false);}
             };
         }
 
-        function exitEditMode(saved) {
-            if (!isEditing) return;
-            const nameEl = $('#d-name');
-
-            if (!saved) {
-                nameEl.textContent = originalName;
-                $('#d-avatar').textContent = originalName.substring(0,1).toUpperCase();
-            } else {
-                originalName = (nameEl.textContent || '').trim();
+        function exitEditMode(saved){
+            if(!isEditing)return;
+            const nameEl=$('#d-name');
+            if(!saved){
+                nameEl.textContent=originalName;
+                $('#d-avatar').textContent=originalName.substring(0,1).toUpperCase();
+            }else{
+                originalName=(nameEl.textContent||'').trim();
             }
-
             nameEl.removeAttribute('contenteditable');
-            nameEl.onkeydown = null;
-
-            $('#btn-save').style.display = 'none';
-            $('#btn-edit').style.display = 'inline-flex';
-            isEditing = false;
+            nameEl.onkeydown=null;
+            $('#btn-save').style.display='none';
+            $('#btn-edit').style.display='inline-flex';
+            isEditing=false;
         }
 
-        async function saveAgentName() {
-            const id = currentUserId;
-            const nombre = ($('#d-name')?.textContent || '').trim();
-
-            if (!id || id <= 0) { alert('Id inválido.'); return; }
-            if (!nombre) { alert('Ingrese un nombre.'); return; }
-
-            const url = '@Url.Action("ActualizarNombre", "Agentes")';
-            try {
-                $('#btn-save').disabled = true;
-
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ id, nombre })
+        async function saveAgentName(){
+            const id=currentUserId;
+            const nombre=($('#d-name')?.textContent||'').trim();
+            if(!id||id<=0){alert('Id inválido.');return;}
+            if(!nombre){alert('Ingrese un nombre.');return;}
+            const url='@Url.Action("ActualizarNombre", "Agentes")';
+            try{
+                $('#btn-save').disabled=true;
+                const res=await fetch(url,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+                    body:JSON.stringify({id,nombre})
                 });
-
-                if (!res.ok) {
-                    const msg = await res.text();
+                if(!res.ok){
+                    const msg=await res.text();
                     alert(`No se pudo guardar (${res.status}). ${msg}`);
-                    $('#btn-save').disabled = false;
+                    $('#btn-save').disabled=false;
                     return;
                 }
-
-                $('#d-avatar').textContent = nombre.substring(0,1).toUpperCase();
-
-                const cell = document.getElementById(`name-${id}`);
-                if (cell) cell.textContent = nombre;
-
+                $('#d-avatar').textContent=nombre.substring(0,1).toUpperCase();
+                const cell=document.getElementById(`name-${id}`);
+                if(cell)cell.textContent=nombre;
                 exitEditMode(true);
-
-            } catch (err) {
-                alert(`Error: ${err?.message ?? err}`);
-                $('#btn-save').disabled = false;
+            }catch(err){
+                alert(`Error: ${err?.message??err}`);
+                $('#btn-save').disabled=false;
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.querySelector('.agents-table');
-            if (!table) return;
-
-            table.addEventListener('dblclick', (ev) => {
-                const tr = ev.target.closest('tbody tr');
-                if (!tr) return;
-                const btn = tr.querySelector('.btn-view');
-                if (btn) btn.click();
+        document.addEventListener('DOMContentLoaded',()=>{
+            const table=document.querySelector('.agents-table');
+            if(!table)return;
+            table.addEventListener('dblclick',(ev)=>{
+                const tr=ev.target.closest('tbody tr');
+                if(!tr)return;
+                const btn=tr.querySelector('.btn-view');
+                if(btn)btn.click();
             });
-
-            let lastTap = 0;
-            table.addEventListener('touchend', (ev) => {
-                const now = Date.now();
-                if (now - lastTap > 0 && now - lastTap < 350) {
-                    const tr = ev.target.closest('tbody tr');
-                    if (!tr) return;
-                    const btn = tr.querySelector('.btn-view');
-                    if (btn) btn.click();
+            let lastTap=0;
+            table.addEventListener('touchend',(ev)=>{
+                const now=Date.now();
+                if(now-lastTap>0&&now-lastTap<350){
+                    const tr=ev.target.closest('tbody tr');
+                    if(!tr)return;
+                    const btn=tr.querySelector('.btn-view');
+                    if(btn)btn.click();
                 }
-                lastTap = now;
-            }, { passive: true });
+                lastTap=now;
+            },{passive:true});
         });
     </script>
 }
