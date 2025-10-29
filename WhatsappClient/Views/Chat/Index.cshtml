@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Live Agent WhatsApp";
 }
 
@@ -407,353 +407,313 @@
 
 @section Scripts {
     <script>
-        const usersEl      = document.getElementById('users');
-        const usersMobEl   = document.getElementById('users-mob');
-        const messagesEl   = document.getElementById('messages');
+        /* ===== CONFIG BÁSICA ===== */
+        const usersEl    = document.getElementById('users');
+        const usersMobEl = document.getElementById('users-mob');
+        const messagesEl = document.getElementById('messages');
 
-        const searchBox    = document.getElementById('searchBox');
-        const statusFilter = document.getElementById('statusFilter');
-
+        const searchBox       = document.getElementById('searchBox');
+        const statusFilter    = document.getElementById('statusFilter');
         const searchBoxMob    = document.getElementById('searchBoxMob');
         const statusFilterMob = document.getElementById('statusFilterMob');
 
-        const badgeEl   = document.getElementById('statusBadge');
-        const toggleBtn = document.getElementById('toggleStatusBtn');
-        const sendBtn   = document.getElementById('send-btn');
-        const inputEl   = document.getElementById('message-input');
-
-        const chatNameEl      = document.getElementById('chat-contact-name');
-        const chatBtnEdit     = document.getElementById('chat-btnEditName');
-        const chatBtnSave     = document.getElementById('chat-btnSaveName');
-        const headerNamePill  = document.getElementById('headerContactName');
-        const convNumberEl    = document.getElementById('convNumber');
-
-        const NAME_MAX = 20;
+        const chatNameEl  = document.getElementById('chat-contact-name');
+        const badgeEl     = document.getElementById('statusBadge');
+        const toggleBtn   = document.getElementById('toggleStatusBtn');
+        const sendBtn     = document.getElementById('send-btn');
+        const inputEl     = document.getElementById('message-input');
 
         let conversations = [];
         let selectedConversation = null;
         let messages = [];
 
-        const contactNamesById = Object.create(null);
-        let isEditingHeaderName = false;
-        let currentHeaderName = '';
+        /* ===== PREFERENCIA: NO auto-seguir la última ===== */
+        // Guardamos/restauramos la conversación seleccionada para NO saltar a nuevas.
+        const LS_SELECTED_ID = 'livechat:selectedConvId';
 
+        /* ===== UTILS ===== */
         const CR_TZ = 'America/Costa_Rica';
         function asDateUTC(ts){ if(ts==null) return new Date(NaN); if(typeof ts==='number') return new Date(ts); const s=String(ts); if(/Z|[+-]\d{2}:\d{2}$/.test(s)) return new Date(s); return new Date(s+'Z'); }
         const fmtDateTimeCR=new Intl.DateTimeFormat('es-CR',{timeZone:CR_TZ,dateStyle:'short',timeStyle:'short'});
         const fmtTimeCR=new Intl.DateTimeFormat('es-CR',{timeZone:CR_TZ,hour:'2-digit',minute:'2-digit'});
         const fmt=(ts)=>{const d=asDateUTC(ts);return isNaN(d)?'':fmtDateTimeCR.format(d);};
         const fmtTime=(ts)=>{const d=asDateUTC(ts);return isNaN(d)?'':fmtTimeCR.format(d);};
-        const toMillisUTC=(ts)=>{const d=asDateUTC(ts);return isNaN(d)?0:d.getTime();};
         const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         function normalizeSender(s){ const v=(s||'contact').toLowerCase(); return (v==='agent'||v==='user'||v==='me'||v==='admin')?'me':'contact'; }
+        function quickHash(str){ let h=0; for(let i=0;i<str.length;i++) h=(h*31+str.charCodeAt(i))|0; return String(h); }
+        function stable(list){ try{ return JSON.stringify(list, Object.keys(list).sort()); }catch{ return JSON.stringify(list);} }
 
-        function getDisplayNameForConv(c){
-          const local = (c && c.contactId ? contactNamesById[c.contactId] : '') || '';
-          const fromConv = (c && c.contactName) || '';
-          const base = (local || fromConv).trim();
-          if (base) return base;
-          if (c && c.contactPhone) return c.contactPhone;
-          return c && c.contactId ? `Contacto ${c.contactId}` : 'Contacto';
-        }
-
-        function applyStatusUI(status){
-          const s=(status||'open').toLowerCase();
-          badgeEl.textContent=s.toUpperCase();
-          badgeEl.className='badge '+(s==='open'?'badge-open':'badge-closed');
-          const isClosed=(s!=='open');
-          inputEl.disabled=isClosed; sendBtn.disabled=isClosed;
-          inputEl.placeholder=isClosed?'Conversación cerrada':'Escribe un mensaje...';
-          toggleBtn.disabled=(!selectedConversation)||isClosed;
-          toggleBtn.textContent=isClosed?'Cerrada':'Cerrar';
-        }
-
-        function updateActiveConvLink(){
-          if (usersEl) usersEl.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
-          if (usersMobEl) usersMobEl.querySelectorAll('.list-group-item').forEach(a => a.classList.remove('active'));
-          if(!selectedConversation) return;
-          const sel = String(selectedConversation.id);
-          const el1 = usersEl   ? usersEl.querySelector(`.list-group-item[data-conv-id="${sel}"]`) : null;
-          const el2 = usersMobEl? usersMobEl.querySelector(`.list-group-item[data-conv-id="${sel}"]`) : null;
-          if(el1) el1.classList.add('active');
-          if(el2) el2.classList.add('active');
-        }
-
-        function getFilterStatus(){
-          const st = (statusFilter?.value || 'all');
-          const q  = (searchBox?.value || '').trim().toLowerCase();
-          return { st, q };
-        }
-        function setFiltersFromMob(){
-          if (searchBox && searchBoxMob) { searchBox.value = searchBoxMob.value; }
-          if (statusFilter && statusFilterMob) { statusFilter.value = statusFilterMob.value; }
-        }
-        function syncMobFromDesktop(){
-          if (searchBox && searchBoxMob) { searchBoxMob.value = searchBox.value; }
-          if (statusFilter && statusFilterMob) { statusFilterMob.value = statusFilter.value; }
-        }
-
+        /* ===== RENDER LISTA ===== */
+        function getDisplayNameForConv(c){ return (c.contactName||c.contactPhone||(`Contacto ${c.contactId||c.id||''}`)).trim(); }
         function conversationsHTML(arr){
           return arr.map(c=>{
-            const isClosed = (String(c.status||'open').toLowerCase() !== 'open');
-            const name = esc(getDisplayNameForConv(c));
-            const when = c.lastActivityAt ? fmt(c.lastActivityAt) : (c.startedAt ? fmt(c.startedAt) : '');
-            const phone = esc(c.contactPhone||'');
+            const isClosed = (String(c.status||'open').toLowerCase()!=='open');
             return `
               <a href="#" class="list-group-item list-group-item-action d-flex align-items-start${isClosed?' closed':''}" data-conv-id="${c.id}">
                 <img src="https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg" class="rounded-circle me-2" width="40" height="40" alt="">
                 <div class="flex-grow-1 min-w-0">
-                  <div class="fw-bold text-truncate-1">${name}</div>
-                  <div class="small text-muted">${when}</div>
-                  <div class="small">${phone}</div>
+                  <div class="fw-bold text-truncate-1">${esc(getDisplayNameForConv(c))}</div>
+                  <div class="small text-muted">${esc(c.lastActivityAt?fmt(c.lastActivityAt):(c.startedAt?fmt(c.startedAt):''))}</div>
+                  <div class="small">${esc(c.contactPhone||'')}</div>
                 </div>
               </a>`;
           }).join('');
         }
-
         function renderConversations(list){
-          const { st, q } = getFilterStatus();
-          const src = (list||[]).filter(c =>{
+          const st = (statusFilter?.value||'all');
+          const q  = (searchBox?.value||'').toLowerCase().trim();
+          const src = (list||[]).filter(c=>{
             const name = getDisplayNameForConv(c).toLowerCase();
-            const okStatus = (st==='all' ? true : ((c.status||'open').toLowerCase()===st));
-            const okText = String(c.id).includes(q)
-                        || name.includes(q)
-                        || (c.contactPhone && c.contactPhone.toLowerCase().includes(q))
-                        || (c.status && c.status.toLowerCase().includes(q));
+            const okStatus = (st==='all') || ((c.status||'open').toLowerCase()===st);
+            const okText = String(c.id).includes(q) || name.includes(q) || (c.contactPhone||'').toLowerCase().includes(q);
             return okStatus && okText;
           });
-
-          if (!src.length){
-            if (usersEl) usersEl.innerHTML   = '<div class="p-3 text-muted">No hay conversaciones.</div>';
-            if (usersMobEl) usersMobEl.innerHTML = '<div class="p-3 text-muted">No hay conversaciones.</div>';
-            return;
-          }
-
-          const html = conversationsHTML(src);
-          if (usersEl) usersEl.innerHTML     = html;
-          if (usersMobEl) usersMobEl.innerHTML = html;
-
-          updateActiveConvLink();
+          const html = src.length? conversationsHTML(src) : '<div class="p-3 text-muted">No hay conversaciones.</div>';
+          if(usersEl) usersEl.innerHTML = html;
+          if(usersMobEl) usersMobEl.innerHTML = html;
+          highlightActive();
+        }
+        function highlightActive(){
+          const id = selectedConversation?.id;
+          usersEl?.querySelectorAll('.list-group-item').forEach(a=>a.classList.toggle('active', a.dataset.convId==id));
+          usersMobEl?.querySelectorAll('.list-group-item').forEach(a=>a.classList.toggle('active', a.dataset.convId==id));
         }
 
-        function setHeaderNameFromConv(conv){
-          const display = getDisplayNameForConv(conv);
-          currentHeaderName = display;
-          chatNameEl.textContent = display;
-          if (headerNamePill){
-            headerNamePill.textContent = display;
-            headerNamePill.style.display = display ? '' : 'none';
-          }
+        /* ===== CONVERSACIÓN ===== */
+        function applyStatusUI(status){
+          const s=(status||'open').toLowerCase();
+          badgeEl.textContent=s.toUpperCase();
+          badgeEl.className='badge '+(s==='open'?'badge-open':'badge-closed');
+          const closed = s!=='open';
+          inputEl.disabled=closed; sendBtn.disabled=closed;
+          inputEl.placeholder=closed?'Conversación cerrada':'Escribe un mensaje...';
+          toggleBtn.disabled=!selectedConversation || closed;
+          toggleBtn.textContent = closed?'Cerrada':'Cerrar';
         }
-
         function selectConversation(conv){
-          selectedConversation=conv;
-          setHeaderNameFromConv(conv);
-          document.getElementById('chat-contact-sub').textContent  = `Conversación #${conv.id}`;
-          if (convNumberEl){ convNumberEl.style.display='none'; }
+          if(!conv) return;
+          selectedConversation = conv;
+          localStorage.setItem(LS_SELECTED_ID, String(conv.id)); // <— persistir selección
+          chatNameEl.textContent = getDisplayNameForConv(conv);
+          document.getElementById('chat-contact-sub').textContent = `Conversación #${conv.id}`;
           applyStatusUI(conv.status);
-          updateActiveConvLink();
+          renderConversations(conversations);
           loadMessages(conv.id);
-
-          try{
-            const el = document.getElementById('convOffcanvas');
-            if (window.bootstrap && el){
-              const oc = bootstrap.Offcanvas.getInstance(el);
-              if (oc) oc.hide();
-            }
-          }catch(_){}
-
-          exitEditHeaderName(false);
+        }
+        function ensureSelectedRef(){
+          if(!selectedConversation) return;
+          const updated = conversations.find(c=>String(c.id)===String(selectedConversation.id));
+          if(updated) selectedConversation = updated;
+          highlightActive();
         }
 
-        function selectConversationById(id){
-          const c=conversations.find(x=>String(x.id)===String(id));
-          if(c){ selectConversation(c); }
-        }
-
-        async function loadAllConversations(){
-          try{
-            const res=await fetch('/Chat/GetAllConversations');
-            const data=await res.json();
-            if(data.error){
-              if (usersEl) usersEl.innerHTML=`<div class="p-3 text-danger">Error: ${data.error}</div>`;
-              if (usersMobEl) usersMobEl.innerHTML=`<div class="p-3 text-danger">Error: ${data.error}</div>`;
-              return;
-            }
-            conversations=(data.conversations||[]);
-            conversations.sort((a,b)=>{
-              const ta=toMillisUTC(a.lastActivityAt||a.startedAt);
-              const tb=toMillisUTC(b.lastActivityAt||b.startedAt);
-              return tb-ta;
-            });
-            renderConversations(conversations);
-            if(!selectedConversation && conversations.length>0) selectConversation(conversations[0]);
-          }catch(e){
-            if (usersEl) usersEl.innerHTML='<div class="p-3 text-danger">Error cargando conversaciones</div>';
-            if (usersMobEl) usersMobEl.innerHTML='<div class="p-3 text-danger">Error cargando conversaciones</div>';
-            console.error(e);
-          }
-        }
-
-        async function loadMessages(conversationId){
-          messagesEl.innerHTML='<div class="text-muted">Cargando mensajes...</div>';
-          try{
-            const res=await fetch(`/Chat/GetConversationMessages?conversationId=${conversationId}`);
-            const data=await res.json();
-            if(data.error){ messagesEl.innerHTML=`<div class="text-danger">Error: ${data.error}</div>`; return; }
-            messages=data.messages||[];
-            renderMessages();
-          }catch(e){
-            messagesEl.innerHTML='<div class="text-danger">No se pudieron cargar los mensajes</div>';
-            console.error(e);
-          }
-        }
-
+        /* ===== MENSAJES ===== */
         function renderMessages(){
           messagesEl.innerHTML='';
-          if(!messages.length){
-            messagesEl.innerHTML='<div class="text-muted">Sin mensajes aún.</div>';
-            return;
-          }
+          if(!messages.length){ messagesEl.innerHTML='<div class="text-muted">Sin mensajes aún.</div>'; return; }
           messages.forEach(m=>{
             const who=normalizeSender(m.sender);
             const wrap=document.createElement('div'); wrap.className='msg '+(who==='me'?'me':'contact');
             const bubble=document.createElement('div'); bubble.className='bubble';
-            if(m.type && m.type!=='text'){ bubble.innerHTML = `<strong>[${esc(m.type)}]</strong> ${esc(m.message||'')}`; }
+            if(m.type && m.type!=='text'){ bubble.innerHTML=`<strong>[${esc(m.type)}]</strong> ${esc(m.message||'')}`; }
             else{ bubble.textContent = m.message || ''; }
-            const time=document.createElement('span'); time.textContent=fmtTime(m.sentAt); time.className=(who==='me'?'time':'time-dark');
-            if(who==='me'){ bubble.appendChild(time); wrap.appendChild(bubble); } else{ wrap.appendChild(bubble); bubble.appendChild(time); }
+            const t=document.createElement('span'); t.className=(who==='me'?'time':'time-dark'); t.textContent=fmtTime(m.sentAt);
+            if(who==='me'){ bubble.appendChild(t); wrap.appendChild(bubble); } else { wrap.appendChild(bubble); bubble.appendChild(t); }
             messagesEl.appendChild(wrap);
           });
           messagesEl.scrollTop = messagesEl.scrollHeight;
         }
+        async function loadMessages(conversationId){
+          try{
+            const data = await fetch(`/Chat/GetConversationMessages?conversationId=${conversationId}&_=${Date.now()}`, {
+              headers:{'X-Requested-With':'XMLHttpRequest'},
+              cache:'no-store'
+            }).then(r=>r.json());
+            messages = data?.messages || [];
+            renderMessages();
+          }catch(e){ console.error(e); }
+        }
 
+        /* ===== ENVÍO ===== */
         async function sendMessage(){
           const txt=(inputEl.value||'').trim();
           if(!txt || !selectedConversation) return;
-          const status=(selectedConversation.status||'open').toLowerCase();
-          if(status!=='open') return;
+          if((selectedConversation.status||'open').toLowerCase()!=='open') return;
 
           messages.push({ sender:'agent', message:txt, type:'text', sentAt:new Date().toISOString() });
-          renderMessages();
-          inputEl.value='';
-
-          const payload={ conversationId:selectedConversation.id, contactId:selectedConversation.contactId||null, contactPhone:selectedConversation.contactPhone||null, message:txt };
+          renderMessages(); inputEl.value='';
 
           try{
-            const res=await fetch('/Chat/SendMessage',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-            const data=await res.json();
-            if(!data || data.success===false){ alert(data?.error || 'No se pudo enviar el mensaje.'); }
-            else{
-              const newId=data.conversationId;
-              if(newId && newId!==selectedConversation.id){ await loadAllConversations(); selectConversationById(newId); }
-              else{ setTimeout(()=>loadMessages(selectedConversation.id),350); }
-            }
+            const res = await fetch('/Chat/SendMessage',{
+              method:'POST',
+              headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+              cache:'no-store',
+              body:JSON.stringify({
+                conversationId:selectedConversation.id,
+                contactId:selectedConversation.contactId||null,
+                contactPhone:selectedConversation.contactPhone||null,
+                message:txt
+              })
+            }).then(r=>r.json());
+            if(!res?.success) alert(res?.error||'No se pudo enviar el mensaje.');
           }catch(e){ console.error(e); alert('Error al enviar.'); }
         }
 
-        async function toggleStatus(){
-          if(!selectedConversation) return;
-          const current=(selectedConversation.status||'open').toLowerCase();
-          if(current!=='open') return;
-          const next='closed';
+        /* ===== POLLING CONVERSACIONES (rápido, sin auto-cambio) ===== */
+        let convController = null;
+        let lastConvHash   = '';
 
-          const payload={ conversationId:selectedConversation.id, status:next, contactId:selectedConversation.contactId||null, startedAt:selectedConversation.startedAt||null };
+        // tiempos agresivos con jitter
+        let minDelayMs  = 800;     // ~0.8s
+        let pollDelayMs = 1200;    // arranque ~1.2s
+        let maxDelayMs  = 8000;    // hasta 8s si no hay cambios
+        let convTimer   = null;
 
+        function jitter(ms){ const d=ms*0.10; return Math.max(300, Math.floor(ms + (Math.random()*2-1)*d)); }
+        function scheduleNext(ms){ clearTimeout(convTimer); convTimer = setTimeout(pollConversations, jitter(ms)); }
+
+        function mergeConversations(list){
+          const byId = Object.create(null);
+          conversations.forEach(c=>byId[String(c.id)]=c);
+
+          let hasNew = false;
+          for(const n of list){
+            const id = String(n.id);
+            if(byId[id]) Object.assign(byId[id], n);
+            else { hasNew = true; byId[id]=n; conversations.push(byId[id]); }
+          }
+          conversations.sort((a,b)=>{
+            const ta=asDateUTC(a.lastActivityAt||a.startedAt).getTime()||0;
+            const tb=asDateUTC(b.lastActivityAt||b.startedAt).getTime()||0;
+            return tb-ta;
+          });
+
+          // IMPORTANTÍSIMO: NO auto-seleccionar aquí
+          // Solo refrescar UI y mantener la selección actual si existe.
+          ensureSelectedRef();
+          renderConversations(conversations);
+
+          // Acelerar si hubo cambios visibles; backoff si no
+          if(list.length && hasNew){ pollDelayMs = minDelayMs; }
+          else { pollDelayMs = Math.min(maxDelayMs, Math.floor(pollDelayMs*1.15)); }
+        }
+
+        async function pollConversations(){
+          if (document.hidden){ scheduleNext(Math.min(maxDelayMs, Math.max(pollDelayMs, 4000))); return; }
           try{
-            const res=await fetch('/Chat/UpdateConversationStatus',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-            const data=await res.json();
-            if(data && data.success){
-              selectedConversation.status=next;
-              const idx=conversations.findIndex(c=>c.id===selectedConversation.id);
-              if(idx>=0) conversations[idx].status=next;
-              applyStatusUI(next);
-              renderConversations(conversations);
-            }else{ alert(data?.error || 'No se pudo actualizar el estado.'); }
-          }catch(e){ console.error(e); alert('Error al cambiar estado.'); }
-        }
+            convController?.abort();
+            convController = new AbortController();
 
-        function placeCaretEndEl(el){
-          try{ const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }catch{}
-        }
-        function validateHeaderNameAndToggle(){
-          const v=(chatNameEl.textContent||'').trim();
-          const trimmed = v.slice(0, NAME_MAX);
-          if (trimmed !== chatNameEl.textContent) { chatNameEl.textContent = trimmed; placeCaretEndEl(chatNameEl); }
-          chatBtnSave.disabled = (trimmed.length===0 || trimmed===currentHeaderName);
-        }
-        function enterEditHeaderName(){
-          if(!selectedConversation || isEditingHeaderName) return;
-          isEditingHeaderName=true;
-          chatNameEl.setAttribute('contenteditable','true');
-          chatNameEl.focus(); placeCaretEndEl(chatNameEl);
-          chatBtnEdit.style.display='none'; chatBtnSave.style.display='inline-flex'; chatBtnSave.disabled=true;
-          chatNameEl.oninput = validateHeaderNameAndToggle;
-          chatNameEl.onkeydown = (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); saveHeaderContactName(); } if(ev.key==='Escape'){ ev.preventDefault(); exitEditHeaderName(false); } };
-        }
-        function exitEditHeaderName(saved){
-          if(!isEditingHeaderName) return;
-          chatNameEl.removeAttribute('contenteditable'); chatNameEl.oninput = chatNameEl.onkeydown = null;
-          if(!saved){ chatNameEl.textContent = currentHeaderName; } else { currentHeaderName = (chatNameEl.textContent||'').trim(); }
-          chatBtnSave.style.display='none'; chatBtnEdit.style.display='inline-flex'; isEditingHeaderName=false;
-        }
-        async function saveHeaderContactName(){
-          if(!selectedConversation) return;
-          const id = selectedConversation.contactId || 0;
-          let nombre = (chatNameEl.textContent||'').trim();
-          if(id<=0){ alert('Id inválido.'); return; }
-          if(!nombre){ alert('Ingrese un nombre.'); return; }
-          if(nombre.length>NAME_MAX){ nombre = nombre.slice(0, NAME_MAX); chatNameEl.textContent = nombre; }
-
-          try{
-            chatBtnSave.disabled = true;
-
-            const res = await fetch('@Url.Action("ActualizarNombre", "Contacto")', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ id, nombre })
+            const url = `/Chat/GetAllConversations?_=${Date.now()}`;
+            const res = await fetch(url, {
+              headers:{'X-Requested-With':'XMLHttpRequest','Cache-Control':'no-cache'},
+              cache:'no-store',
+              signal: convController.signal
             });
+            const data = await res.json();
+            const list = data?.conversations || [];
 
-            if(!res.ok){
-              const msg = await res.text();
-              alert(`No se pudo guardar (${res.status}). ${msg || 'No se pudo actualizar el nombre.'}`);
-              chatBtnSave.disabled = false; return;
+            const h = quickHash(stable(list.map(c=>({id:c.id, st:c.status, la:c.lastActivityAt, nm:c.contactName, ph:c.contactPhone}))));
+            if(h !== lastConvHash){
+              lastConvHash = h;
+              mergeConversations(list);
+            }else{
+              pollDelayMs = Math.min(maxDelayMs, Math.floor(pollDelayMs*1.15));
             }
-
-            contactNamesById[id] = nombre;
-            chatNameEl.textContent = nombre;
-            if (headerNamePill){ headerNamePill.textContent = nombre; headerNamePill.style.display=''; }
-            exitEditHeaderName(true);
-            renderConversations(conversations);
           }catch(err){
-            alert(`Error: ${err?.message ?? err}`);
-            chatBtnSave.disabled = false;
+            pollDelayMs = Math.min(maxDelayMs, Math.floor(pollDelayMs*1.5));
+            console.warn('pollConversations error:', err);
+          }finally{
+            scheduleNext(pollDelayMs);
           }
         }
 
-        document.getElementById('chat-btnEditName')?.addEventListener('click', enterEditHeaderName);
-        document.getElementById('chat-btnSaveName')?.addEventListener('click', saveHeaderContactName);
+        document.addEventListener('visibilitychange', ()=>{
+          if(!document.hidden){ pollDelayMs = minDelayMs; scheduleNext(150); }
+        });
 
+        /* ===== EVENTOS UI ===== */
         function onListClick(e){
-          const t = e.target;
-          if (!t) return;
-          const link = t.closest('.list-group-item[data-conv-id]');
+          const link = e.target.closest?.('.list-group-item[data-conv-id]');
           if(!link) return;
           e.preventDefault();
-          selectConversationById(link.dataset.convId);
+          const id = link.dataset.convId;
+          const conv = conversations.find(c=>String(c.id)===String(id));
+          if (conv) selectConversation(conv); // selección manual “bloquea” cualquier salto
         }
         usersEl?.addEventListener('click', onListClick);
         usersMobEl?.addEventListener('click', onListClick);
 
-        statusFilter?.addEventListener('change', ()=>{ if (searchBox && searchBoxMob) searchBoxMob.value = searchBox.value; if (statusFilter && statusFilterMob) statusFilterMob.value = statusFilter.value; renderConversations(conversations); });
-        searchBox?.addEventListener('input', ()=>{ if (searchBox && searchBoxMob) searchBoxMob.value = searchBox.value; if (statusFilter && statusFilterMob) statusFilterMob.value = statusFilter.value; renderConversations(conversations); });
-        statusFilterMob?.addEventListener('change', ()=>{ if (searchBox && searchBoxMob) searchBox.value = searchBoxMob.value; if (statusFilter && statusFilterMob) statusFilter.value = statusFilterMob.value; renderConversations(conversations); });
-        searchBoxMob?.addEventListener('input', ()=>{ if (searchBox && searchBoxMob) searchBox.value = searchBoxMob.value; if (statusFilter && statusFilterMob) statusFilter.value = statusFilterMob.value; renderConversations(conversations); });
+        statusFilter?.addEventListener('change', ()=>{ if (searchBoxMob) searchBoxMob.value = searchBox.value; if (statusFilterMob) statusFilterMob.value = statusFilter.value; renderConversations(conversations); });
+        searchBox?.addEventListener('input', ()=>{ if (searchBoxMob) searchBoxMob.value = searchBox.value; if (statusFilterMob) statusFilterMob.value = statusFilter.value; renderConversations(conversations); });
+        statusFilterMob?.addEventListener('change', ()=>{ if (searchBox) searchBox.value = searchBoxMob.value; if (statusFilter) statusFilter.value = statusFilterMob.value; renderConversations(conversations); });
+        searchBoxMob?.addEventListener('input', ()=>{ if (searchBox) searchBox.value = searchBoxMob.value; if (statusFilter) statusFilter.value = statusFilterMob.value; renderConversations(conversations); });
 
-        document.getElementById('send-btn').addEventListener('click', sendMessage);
-        document.getElementById('message-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
-        document.getElementById('toggleStatusBtn').addEventListener('click', toggleStatus);
+        sendBtn?.addEventListener('click', sendMessage);
+        inputEl?.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
+        toggleBtn?.addEventListener('click', async ()=>{
+          if(!selectedConversation) return;
+          if((selectedConversation.status||'open').toLowerCase()!=='open') return;
+          try{
+            const res = await fetch('/Chat/UpdateConversationStatus',{
+              method:'POST',
+              headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+              cache:'no-store',
+              body:JSON.stringify({conversationId:selectedConversation.id,status:'closed'})
+            }).then(r=>r.json());
+            if(res?.success){
+              selectedConversation.status='closed';
+              applyStatusUI('closed');
+              renderConversations(conversations);
+            }else{
+              alert(res?.error||'No se pudo cerrar.');
+            }
+          }catch(e){ console.error(e); alert('Error al cerrar.'); }
+        });
 
-        loadAllConversations();
+        /* ===== ARRANQUE ===== */
+        (async function boot(){
+          try{
+            const data = await fetch(`/Chat/GetAllConversations?_=${Date.now()}`, {
+              headers:{'X-Requested-With':'XMLHttpRequest'},
+              cache:'no-store'
+            }).then(r=>r.json());
+            conversations = data?.conversations || [];
+            conversations.sort((a,b)=>{
+              const ta=asDateUTC(a.lastActivityAt||a.startedAt).getTime()||0;
+              const tb=asDateUTC(b.lastActivityAt||b.startedAt).getTime()||0;
+              return tb-ta;
+            });
+            renderConversations(conversations);
+
+            // Restaurar la última conversación vista (si existe); si no, tomar la primera
+            const savedId = localStorage.getItem(LS_SELECTED_ID);
+            const savedConv = savedId ? conversations.find(c=>String(c.id)===savedId) : null;
+            if(savedConv) selectConversation(savedConv);
+            else if(conversations.length) selectConversation(conversations[0]);
+
+            // set hash inicial
+            lastConvHash = quickHash(stable(conversations.map(c=>({id:c.id, st:c.status, la:c.lastActivityAt, nm:c.contactName, ph:c.contactPhone}))));
+
+            // iniciar polling
+            pollDelayMs = minDelayMs;
+            scheduleNext(200);
+          }catch(e){
+            console.error(e);
+            if(usersEl) usersEl.innerHTML='<div class="p-3 text-danger">Error cargando conversaciones</div>';
+          }
+        })();
+
+        /* ===== RECOMENDACIÓN SERVIDOR =====
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        Response.Headers.CacheControl = "no-cache, no-store";
+        Response.Headers["Pragma"] = "no-cache";
+        Response.Headers["Expires"] = "0";
+        =================================== */
     </script>
+}
+
+
+
+
 }
