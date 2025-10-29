@@ -452,7 +452,7 @@
               <a href="#" class="list-group-item list-group-item-action d-flex align-items-start${isClosed?' closed':''}" data-conv-id="${c.id}">
                 <img src="https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg" class="rounded-circle me-2" width="40" height="40" alt="">
                 <div class="flex-grow-1 min-w-0">
-                  <div class="fw-bold text-truncate-1">${esc(getDisplayNameForConv(c))}</div>
+                  <div class="fw-bold text-truncate-1">${esc(getDisplayNameForConv(c))} - ${esc(String(c.status ?? ''))}</div>
                   <div class="small text-muted">${esc(c.lastActivityAt?fmt(c.lastActivityAt):(c.startedAt?fmt(c.startedAt):''))}</div>
                   <div class="small">${esc(c.contactPhone||'')}</div>
                 </div>
@@ -711,9 +711,5 @@
         Response.Headers["Expires"] = "0";
         =================================== */
     </script>
-}
-
-
-
-
+    }
 }
