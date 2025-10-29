@@ -370,7 +370,7 @@ namespace WhatsappClient.Controllers
                         Contact_Id = contactId,
                         Conversation_Id = req.ConversationId,
                         To_Phone = contactPhone,
-                        Text = "Tu ticket ha sido cerrado. Si necesitas más ayuda, por favor crea un nuevo ticket respondiendo a este chat.",
+                        Text = "Tu tconversación ha sido cerrada. Si necesita más ayuda, por favor contacte de nuevo a un agente respondiendo a este chat.",
                         Create_If_Not_Exists = false,
                         Log = true
                     });
