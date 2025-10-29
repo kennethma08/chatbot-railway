@@ -1,4 +1,3 @@
-﻿
 :root {
     --bg: #f7f8fb;
     --ink: #26283b;
@@ -20,6 +19,9 @@
     --table-border: #edf0f5;
     --line: #eef2f7;
     --chip: #eef6ff;
+    --zebra-odd: #fbf7ff;
+    --zebra-even: #fff;
+    --zebra-hover: #ede2f6;
 }
 
 .wrap {
@@ -260,6 +262,7 @@ tbody tr:hover {
     padding: 8px 10px;
     cursor: pointer
 }
+
 @media (max-width:1024px) {
     .kpis {
         grid-template-columns: repeat(2,1fr)
@@ -270,192 +273,173 @@ tbody tr:hover {
     }
 }
 
-/* ======= Paleta y tarjetas KPI (igual a Dashboard) ======= */
-:root {
-    --pastel-blue: #cfe8ff;
-    --pastel-green: #d6f5e3;
-    --pastel-yellow: #fff4c7;
-    --pastel-purple: #e9dbff;
+/* Card contenedora de la tabla (mismo estilo que Clientes) */
+.card-contacts {
+    border-radius: 16px;
+    border: 1px solid #e9edf3;
+    box-shadow: 0 6px 20px rgba(17, 24, 39, .06);
+    overflow: hidden;
+    background: #fff;
+}
+.card-contacts .table-contacts {
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+}
+.card-contacts .table-responsive {
+    overflow: hidden;
+    border-radius: inherit;
 }
 
-.kpi-card {
+/* Tabla con zebra morado y bordes suaves */
+table.agents-table.table-contacts tbody tr:nth-of-type(odd) > td,
+table.agents-table.table-contacts tbody tr:nth-of-type(odd) > th {
+    background-color: var(--zebra-odd) !important;
+}
+table.agents-table.table-contacts tbody tr:nth-of-type(even) > td,
+table.agents-table.table-contacts tbody tr:nth-of-type(even) > th {
+    background-color: var(--zebra-even) !important;
+}
+table.agents-table.table-contacts tbody tr:hover > td,
+table.agents-table.table-contacts tbody tr:hover > th {
+    background-color: var(--zebra-hover) !important;
+}
+table.agents-table.table-contacts tbody td {
+    border-bottom-color: #eadcf4 !important;
+}
+
+/* Filtro superior: selector "Mostrar" y buscador tipo pill (igual que Clientes) */
+.dt-custom-filter { gap: .75rem; }
+.dt-length-custom .form-select {
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid #e9edf3;
+    background: #fff;
+    padding: 8px 28px 8px 12px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.dt-length-custom .form-select:hover { border-color: #A860E0 !important; }
+.dt-length-custom .form-select:focus,
+.dt-length-custom .form-select:focus-visible {
+    border-color: #A860E0 !important;
+    box-shadow: 0 0 0 .25rem rgba(168,96,224,.25) !important;
+    outline: none !important;
+}
+
+/* Buscador pill */
+.dt-search-pill {
+    position: relative;
+    width: 420px;
+    max-width: 100%;
+    border: 1px solid #e9edf3;
+    border-radius: 999px;
+    padding: 0 .5rem;
+    background: #fff;
+}
+.dt-search-pill i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #A860E0;
+    font-size: 14px;
+    opacity: 1;
+    pointer-events: none;
+}
+.dt-search-pill input.form-control {
+    height: 42px;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+    padding-left: 2.3rem;
+    background: transparent;
+    color: black;
+    caret-color: black;
+}
+.dt-search-pill input.form-control::placeholder { color: black; opacity: 1; }
+
+/* Hover/Focus del buscador (igual a Clientes) */
+.dt-search-pill:hover,
+.dt-search-pill:focus-within {
+    border-color: #A860E0 !important;
+    box-shadow: 0 0 0 .25rem rgba(168,96,224,.15);
+}
+.dt-search-pill:hover i,
+.dt-search-pill:focus-within i {
+    color: #7f4ca5;
+}
+
+/* Paginación en morado (consistente) */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover,
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #A860E0 !important;
+    border-color: #A860E0 !important;
+    color: #fff !important;
+}
+
+/* KPI cards en morado + texto e iconos blancos */
+.kpi-card.kpi-1 {
+    background: linear-gradient(160deg, #b57edc 0%, #7f4ca5 100%);
     border: 0;
 }
+.kpi-card .card-body h6,
+.kpi-card .card-body h3,
+.kpi-card .kpi-icon {
+    color: #fff !important;
+    opacity: 1 !important;
+}
+.kpi-icon { font-size: 2rem; }
 
-    .kpi-card .card-body {
-        padding: 1.1rem 1.25rem;
-    }
-
-.kpi-icon {
-    font-size: 2rem;
-    opacity: .55;
+/* Navlink activo en lila (coherente con Clientes) */
+#sidebar .sidebar-link.active {
+    background-color: #b57edc !important;
+    color: #fff !important;
+}
+#sidebar .sidebar-link.active i {
+    color: #fff !important;
 }
 
-.pastel-blue {
-    background: var(--pastel-blue);
+
+/* 1) Paginación DataTables (Bootstrap) en lila */
+.dt-paging .pagination .page-link {
+    color: #7f4ca5 !important;
+    border: 1px solid #e9edf3 !important;
+}
+.dt-paging .pagination .page-link:hover {
+    background: #A860E0 !important;
+    border-color: #A860E0 !important;
+    color: #fff !important;
+}
+.dt-paging .pagination .page-item.active .page-link,
+.dt-paging .pagination .page-item.active .page-link:hover {
+    background: #A860E0 !important;
+    border-color: #A860E0 !important;
+    color: #fff !important;
+}
+.dt-paging .pagination .page-link:focus {
+    box-shadow: 0 0 0 .25rem rgba(168,96,224,.25) !important;
+    outline: none !important;
 }
 
-.pastel-green {
-    background: var(--pastel-green);
+/* 2) Navlink activo del sidebar en lila (coherente con Contactos) */
+#sidebar li.active > a.sidebar-link,
+#sidebar a.sidebar-link.active {
+    background-color: #b57edc !important;
+    color: #fff !important;
+}
+#sidebar li.active > a.sidebar-link i,
+#sidebar a.sidebar-link.active i {
+    color: #fff !important;
 }
 
-.pastel-yellow {
-    background: var(--pastel-yellow);
+/* 3) Hover/focus del buscador (pill) más notorio */
+.dt-search-pill:hover,
+.dt-search-pill:focus-within {
+    border-color: #A860E0 !important;
+    box-shadow: 0 0 0 .25rem rgba(168,96,224,.15) !important;
 }
-
-.pastel-purple {
-    background: var(--pastel-purple);
-}
-
-/* ======= Tabla de agentes + chips/badges ======= */
-.agents-table thead th {
-    font-size: .82rem;
-    letter-spacing: .2px;
-}
-
-.agents-table tbody td {
-    vertical-align: middle;
-}
-
-.avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    background: linear-gradient(135deg, #f3f0ff, #e9faff);
-    color: #383a4a;
-    box-shadow: inset 0 0 0 1px #eef1f6;
-}
-
-.badge-online {
-    background: #e8fff3;
-    color: #2b8a3e;
-    font-weight: 700;
-    font-size: .75rem;
-    padding: .25rem .5rem;
-    border-radius: .65rem;
-}
-
-.badge-offline {
-    background: #f1f3f5;
-    color: #6c757d;
-    font-weight: 700;
-    font-size: .75rem;
-    padding: .25rem .5rem;
-    border-radius: .65rem;
-}
-
-.count-pill {
-    display: inline-block;
-    padding: .35rem .6rem;
-    border-radius: 999px;
-    font-weight: 800;
-    font-size: .8rem;
-}
-
-.count-low {
-    background: #e8fff3;
-    color: #2b8a3e;
-}
-
-.count-med {
-    background: #fff7e6;
-    color: #b7791f;
-}
-
-.count-high {
-    background: #ffecec;
-    color: #c92a2a;
-}
-
-.ghost {
-    padding: .45rem .75rem;
-    border-radius: .65rem;
-    border: 1px solid #e9ecef;
-    background: #fff;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-    .ghost:hover {
-        background: #f8f9fa;
-    }
-
-.muted {
-    color: #6b6f80;
-}
-
-/* ======= Drawer lateral ======= */
-.drawer {
-    position: fixed;
-    top: 0;
-    right: -480px;
-    width: 480px;
-    height: 100vh;
-    background: #fff;
-    box-shadow: -16px 0 40px rgba(24,39,75,.15);
-    transition: right .25s ease;
-    z-index: 1031;
-    display: flex;
-    flex-direction: column;
-}
-
-    .drawer.open {
-        right: 0;
-    }
-
-    .drawer .hd {
-        padding: 14px 16px;
-        border-bottom: 1px solid #edf0f5;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .drawer .bd {
-        padding: 16px;
-        overflow: auto;
-    }
-
-.tile {
-    background: #fafcff;
-    border: 1px solid #edf0f5;
-    border-radius: 14px;
-    padding: 12px;
-    margin-bottom: 12px;
-}
-
-.badge-mini {
-    padding: 4px 8px;
-    border-radius: 8px;
-    background: #eef6ff;
-    font-weight: 700;
-    font-size: 11px;
-}
-
-.conv {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px;
-    border: 1px dashed #eef2f7;
-    border-radius: 12px;
-    background: #fff;
-    margin-bottom: 8px;
-}
-
-.close-btn {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 10px;
-    padding: 8px 10px;
-    cursor: pointer;
-}
-
-@media (max-width: 720px) {
-    .drawer {
-        width: 100%;
-    }
+.dt-search-pill:hover i,
+.dt-search-pill:focus-within i {
+    color: #7f4ca5 !important;
 }
